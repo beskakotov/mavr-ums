@@ -1,5 +1,7 @@
 from numpy import zeros, sqrt, cos, sin, deg2rad, tan, arctan, pi, arange, fromiter
 
+diagonal_size = 0.025
+
 class OrbitalSolution:
     def __init__(self):
         self.NAME = ''
@@ -88,7 +90,6 @@ def ephemeris(orb_sol, epoch_list, rho=False, rv=False):
         output_ephemeris.append((A * X + F * Y, B * X + G * Y))
     return output_ephemeris
 
-
 def correct(points, T0):
     for number, point in enumerate(points):
         if point.epoch < 3e3 and T0 > 3e3:
@@ -143,3 +144,30 @@ def getOrbit(points, orb_sol):
     xy0 = ephemeris(orb_sol, epochs)
     return xye, xy0, xobs, yobs
 
+def create_axis(axis, plot_params, axis_type='orbit', bottom=True, top=True):
+        axis.tick_params(direction='in')
+        axis.xaxis.set_ticks_position('both')
+        if axis_type == 'orbit':
+            axis.axis('equal')
+        elif axis_type in ['residuals', 'errors']:
+            if not bottom:
+                axis.tick_params(labelbottom='off')
+                axis.spines['bottom'].set_visible(False)
+                axis.xaxis.set_ticks_position('top')
+                kwargs = dict(transform=axis.transAxes, color='k', clip_on=False)
+                axis.plot((-diagonal_size, +diagonal_size), (-diagonal_size, +diagonal_size), **kwargs)
+                axis.plot((1 - diagonal_size, 1 + diagonal_size), (-diagonal_size, +diagonal_size), **kwargs)
+            elif not top:
+                axis.tick_params(labeltop='off')
+                axis.spines['top'].set_visible(False)
+                axis.xaxis.set_ticks_position('bottom')
+                kwargs = dict(transform=axis.transAxes, color='k', clip_on=False)
+                axis.plot((-diagonal_size, +diagonal_size), (1 - diagonal_size, 1 + diagonal_size), **kwargs)  # bottom-left diagonal
+                axis.plot((1 - diagonal_size, 1 + diagonal_size), (1 - diagonal_size, 1 + diagonal_size), **kwargs)
+            else:
+                pass
+        elif axis_type == 'box':
+            pass
+        else:
+            raise ValueError(f'Unknown type of axis: {axis_type}')
+        return axis

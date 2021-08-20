@@ -1,9 +1,12 @@
 from PySide2.QtWidgets import QWidget, QGridLayout
 from PySide2.QtCore import Qt, QPoint
 from matplotlib.figure import Figure
-from matplotlib.pyplot import subplot2grid, GridSpec
+from matplotlib.pyplot import plot, subplot2grid, GridSpec
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from numpy import array, random, ceil, unique, floor, append, sqrt, cos, deg2rad, linspace, arange
+
+from ums.orvi.services import create_axis
+
 
 class OrbitImage(QWidget):
     def __init__(self, parent = None):
@@ -81,312 +84,57 @@ class OrbitImage(QWidget):
             self._plot_orbit_only(orbit_params, plot_params)
         else:
             if plot_params['SubMode'] == 'errors' or plot_params['SubMode'] == True:
-                self._plot_with_errors(orbit_params, plot_params)
+                self._plot_with_rho_and_theta(orbit_params, plot_params)
             elif plot_params['SubMode'] == 'residuals' or plot_params['SubMode'] == False:
                 self._plot_with_residuals(orbit_params, plot_params)
-        self.img.draw()
-    
-    def _plot_orbit_only(self, orbit_params, plot_params):
-        self.setFixedSize(600, 600)
-        # ax = self.fig.add_subplot(111)
-        
-    
-    def _plot_with_residuals(self, orbit_params, plot_params):
-        self.setFixedSize(600, 700)
-        gridspec = self.fig.add_gridspec(7, 2,
-                      width_ratios=(7, 2), height_ratios=(75, 5, 5, 5, 5, 5, 5),
-                      left=0.1, right=0.95, bottom=0.05, top=0.95,
-                      wspace=0.2, hspace=0)
-        if plot_params['Brake_1']:
-            pass
-
-    def _plot_with_errors(self, orbit_params, plot_params):
-        self.setFixedSize(600, 800)
-        ax = self.fig.add_subplot()
-        ax = self.__main_axis_settings(ax)
-    
-    def __main_axis_settings(self, axis):
-        axis.axis('equal')
-        axis.tick_params(direction='in')
-        return axis
-    
-    def __standart_axis(self, axis):
-        pass
-
-    def __axis_without_bottom(self, axis):
-        pass
-
-    def __axis_without_top(self, axis):
-        pass
-
-        # gs = self.fig.add_gridspec(7, 2,  width_ratios=(7, 2), height_ratios=(16, 1, 2, 2, 2, 2, 2),
-                    #   left=0.1, right=0.95, bottom=0.05, top=0.95,
-                    #   wspace=0.2, hspace=0)
-
-        # ax1 = self.fig.add_subplot(gs[0, :])
-
-        # self.img.draw()
-        return
-        
-        
-        grid = GridSpec(50, 5, wspace=0.5, hspace=0)
-        d = .025
-        k = 6
-        if plot_params['SubMode']:
-            r1, r2, w, r = 75*2, 20*2, 5*2, 1
-            if plot_params['Brake_1'] and plot_params['Brake_2']:
-                self.ax1 =   subplot2grid((r1 + r2*2 + w + r*2, 5), (0, 0),                            rowspan=r1,        colspan=5, fig=self.fig)
-                ax2 =   subplot2grid((r1 + r2*2 + w + r*2, 5), (r1 + w, 0),                       rowspan=int(r2/2), colspan=4, fig=self.fig)
-                ax3 =   subplot2grid((r1 + r2*2 + w + r*2, 5), (r1 + w + int(r2/2) + r, 0),       rowspan=int(r2/2), colspan=4, fig=self.fig)
-                ax4 =   subplot2grid((r1 + r2*2 + w + r*2, 5), (r1 + w + r2 + r, 0),            rowspan=int(r2/2), colspan=4, fig=self.fig)
-                ax5 =   subplot2grid((r1 + r2*2 + w + r*2, 5), (r1 + w + int(r2*1.5) + r*2, 0), rowspan=int(r2/2), colspan=4, fig=self.fig)
-                ax6 =   subplot2grid((r1 + r2*2 + w + r*2, 5), (r1 + w, 4),                       rowspan=int(r2/2), colspan=1, fig=self.fig)
-                ax7 =   subplot2grid((r1 + r2*2 + w + r*2, 5), (r1 + w + int(r2/2) + r, 4),       rowspan=int(r2/2), colspan=1, fig=self.fig)
-                ax8 =   subplot2grid((r1 + r2*2 + w + r*2, 5), (r1 + w + r2 + r, 4),            rowspan=int(r2/2), colspan=1, fig=self.fig)
-                ax9 =   subplot2grid((r1 + r2*2 + w + r*2, 5), (r1 + w + int(r2*1.5) + r*2, 4), rowspan=int(r2/2), colspan=1, fig=self.fig)
-
-                self.ax1.axis('equal')
-                self.ax1.tick_params(direction='in')
-                ax2.tick_params(direction='in')
-                ax2.xaxis.set_ticks_position('top')
-                ax3.tick_params(direction='in')
-                ax3.xaxis.set_ticks_position('bottom')
-                ax4.tick_params(direction='in')
-                ax4.xaxis.set_ticks_position('top')
-                ax5.tick_params(direction='in')
-                ax5.xaxis.set_ticks_position('bottom')
-                ax6.tick_params(direction='in')
-                ax7.tick_params(direction='in')
-                ax8.tick_params(direction='in')
-                ax9.tick_params(direction='in')
-
-                ax2.spines['bottom'].set_visible(False)
-                ax2.tick_params(labelbottom='off')
-                ax3.spines['top'].set_visible(False)
-
-                ax6.xaxis.set_visible(False)
-                ax6.spines['bottom'].set_visible(False)
-                ax6.tick_params(direction='in')
-                ax6.tick_params(labelbottom='off')
-                ax7.spines['top'].set_visible(False)
-
-                kwargs = dict(transform=ax2.transAxes, color='k', clip_on=False)
-                ax2.plot((-d, +d), (-d, +d), **kwargs)  # top-left diagonal
-                ax2.plot((1 - d, 1 + d), (-d, +d), **kwargs)  # top-right diagonal
-                kwargs.update(transform=ax3.transAxes)  # switch to the bottom axes
-                ax3.plot((-d, +d), (1 - d, 1 + d), **kwargs)  # bottom-left diagonal
-                ax3.plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)  # bottom-right diagonal
-
-                kwargs.update(transform=ax6.transAxes)
-                ax6.plot((-d * k, +d * k), (-d, +d), **kwargs)  # top-left diagonal
-                ax6.plot((1 - d * k, 1 + d * k), (-d, +d), **kwargs)  # top-right diagonal
-                kwargs.update(transform=ax7.transAxes)  # switch to the bottom axes
-                ax7.plot((-d * k, +d * k), (1 - d, 1 + d), **kwargs)  # bottom-left diagonal
-                ax7.plot((1 - d * k, 1 + d * k), (1 - d, 1 + d), **kwargs)  # bottom-right diagonal
-
-                ax4.spines['bottom'].set_visible(False)
-                ax4.tick_params(labelbottom='off')
-                ax5.spines['top'].set_visible(False)
-
-                ax8.xaxis.set_visible(False)
-                ax8.spines['bottom'].set_visible(False)
-                ax8.tick_params(direction='in')
-                ax8.tick_params(labelbottom='off')
-                ax9.spines['top'].set_visible(False)
-
-                kwargs = dict(transform=ax4.transAxes, color='k', clip_on=False)
-                ax4.plot((-d, +d), (-d, +d), **kwargs)  # top-left diagonal
-                ax4.plot((1 - d, 1 + d), (-d, +d), **kwargs)  # top-right diagonal
-                kwargs.update(transform=ax5.transAxes)  # switch to the bottom axes
-                ax5.plot((-d, +d), (1 - d, 1 + d), **kwargs)  # bottom-left diagonal
-                ax5.plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)  # bottom-right diagonal
-
-                kwargs.update(transform=ax8.transAxes)
-                ax8.plot((-d * k, +d * k), (-d, +d), **kwargs)  # top-left diagonal
-                ax8.plot((1 - d * k, 1 + d * k), (-d, +d), **kwargs)  # top-right diagonal
-                kwargs.update(transform=ax9.transAxes)  # switch to the bottom axes
-                ax9.plot((-d * k, +d * k), (1 - d, 1 + d), **kwargs)  # bottom-left diagonal
-                ax9.plot((1 - d * k, 1 + d * k), (1 - d, 1 + d), **kwargs)  # bottom-right diagonal
-
-            elif plot_params['Brake_1'] and not plot_params['Brake_2']:
-                self.ax1 =   subplot2grid((r1 + w + r2*2 + r, 5), (0, 0),                      rowspan=r1,        colspan=5, fig=self.fig)
-                ax2 =   subplot2grid((r1 + w + r2*2 + r, 5), (r1 + w, 0),                 rowspan=int(r2/2), colspan=4, fig=self.fig)
-                ax3 =   subplot2grid((r1 + w + r2*2 + r, 5), (r1 + w + int(r2/2) + r, 0), rowspan=int(r2/2), colspan=4, fig=self.fig)
-                ax5 =   subplot2grid((r1 + w + r2*2 + r, 5), (r1 + w + r2 + r, 0),      rowspan=r2,        colspan=4, fig=self.fig)
-                ax6 =   subplot2grid((r1 + w + r2*2 + r, 5), (r1 + w, 4),                 rowspan=int(r2/2), colspan=1, fig=self.fig)
-                ax7 =   subplot2grid((r1 + w + r2*2 + r, 5), (r1 + w + int(r2/2) + r, 4), rowspan=int(r2/2), colspan=1, fig=self.fig)
-                ax9 =   subplot2grid((r1 + w + r2*2 + r, 5), (r1 + w + r2 + r, 4),      rowspan=r2,        colspan=1, fig=self.fig)
-
-                self.ax1.axis('equal')
-                self.ax1.tick_params(direction='in')
-                ax2.tick_params(direction='in')
-                ax2.xaxis.set_ticks_position('top')
-                ax3.tick_params(direction='in')
-                ax3.xaxis.set_ticks_position('bottom')
-                ax5.tick_params(direction='in')
-                ax5.xaxis.set_ticks_position('both')
-                ax6.tick_params(direction='in')
-                ax7.tick_params(direction='in')
-                ax9.tick_params(direction='in')
-
-                ax2.spines['bottom'].set_visible(False)
-                ax2.tick_params(labelbottom='off')
-                ax3.spines['top'].set_visible(False)
-
-                ax6.xaxis.set_visible(False)
-                ax6.spines['bottom'].set_visible(False)
-                ax6.tick_params(direction='in')
-                ax6.tick_params(labelbottom='off')
-                ax7.spines['top'].set_visible(False)
-
-                kwargs = dict(transform=ax2.transAxes, color='k', clip_on=False)
-                ax2.plot((-d, +d), (-d, +d), **kwargs)  # top-left diagonal
-                ax2.plot((1 - d, 1 + d), (-d, +d), **kwargs)  # top-right diagonal
-                kwargs.update(transform=ax3.transAxes)  # switch to the bottom axes
-                ax3.plot((-d, +d), (1 - d, 1 + d), **kwargs)  # bottom-left diagonal
-                ax3.plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)  # bottom-right diagonal
-
-                kwargs.update(transform=ax6.transAxes)
-                ax6.plot((-d * k, +d * k), (-d, +d), **kwargs)  # top-left diagonal
-                ax6.plot((1 - d * k, 1 + d * k), (-d, +d), **kwargs)  # top-right diagonal
-                kwargs.update(transform=ax7.transAxes)  # switch to the bottom axes
-                ax7.plot((-d * k, +d * k), (1 - d, 1 + d), **kwargs)  # bottom-left diagonal
-                ax7.plot((1 - d * k, 1 + d * k), (1 - d, 1 + d), **kwargs)  # bottom-right diagonal
-
-            elif not plot_params['Brake_1'] and plot_params['Brake_2']:
-                self.ax1 =   subplot2grid((r1 + w + r2*2 + r, 5), (0, 0),                          rowspan=r1,        colspan=5, fig=self.fig)
-                ax3 =   subplot2grid((r1 + w + r2*2 + r, 5), (r1 + w, 0),                     rowspan=r2,        colspan=4, fig=self.fig)
-                ax4 =   subplot2grid((r1 + w + r2*2 + r, 5), (r1 + w + r2, 0),              rowspan=int(r2/2), colspan=4, fig=self.fig)
-                ax5 =   subplot2grid((r1 + w + r2*2 + r, 5), (r1 + w + int(r2*1.5) + r, 0), rowspan=int(r2/2), colspan=4, fig=self.fig)
-                ax7 =   subplot2grid((r1 + w + r2*2 + r, 5), (r1 + w, 4),                     rowspan=r2,        colspan=1, fig=self.fig)
-                ax8 =   subplot2grid((r1 + w + r2*2 + r, 5), (r1 + w + r2, 4),              rowspan=int(r2/2), colspan=1, fig=self.fig)
-                ax9 =   subplot2grid((r1 + w + r2*2 + r, 5), (r1 + w + int(r2*1.5) + r, 4), rowspan=int(r2/2), colspan=1, fig=self.fig)
-
-                self.ax1.axis('equal')
-                self.ax1.tick_params(direction='in')
-                ax3.tick_params(direction='in')
-                ax3.xaxis.set_ticks_position('both')
-                ax4.tick_params(direction='in')
-                ax4.xaxis.set_ticks_position('top')
-                ax5.tick_params(direction='in')
-                ax5.xaxis.set_ticks_position('bottom')
-                ax7.tick_params(direction='in')
-                ax8.tick_params(direction='in')
-                ax9.tick_params(direction='in')
-
-                ax4.spines['bottom'].set_visible(False)
-                ax4.tick_params(labelbottom='off')
-                ax5.spines['top'].set_visible(False)
-
-                ax8.xaxis.set_visible(False)
-                ax8.spines['bottom'].set_visible(False)
-                ax8.tick_params(direction='in')
-                ax8.tick_params(labelbottom='off')
-                ax9.spines['top'].set_visible(False)
-
-                kwargs = dict(transform=ax4.transAxes, color='k', clip_on=False)
-                ax4.plot((-d, +d), (-d, +d), **kwargs)  # top-left diagonal
-                ax4.plot((1 - d, 1 + d), (-d, +d), **kwargs)  # top-right diagonal
-                kwargs.update(transform=ax5.transAxes)  # switch to the bottom axes
-                ax5.plot((-d, +d), (1 - d, 1 + d), **kwargs)  # bottom-left diagonal
-                ax5.plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)  # bottom-right diagonal
-
-                kwargs.update(transform=ax8.transAxes)
-                ax8.plot((-d * k, +d * k), (-d, +d), **kwargs)  # top-left diagonal
-                ax8.plot((1 - d * k, 1 + d * k), (-d, +d), **kwargs)  # top-right diagonal
-                kwargs.update(transform=ax9.transAxes)  # switch to the bottom axes
-                ax9.plot((-d * k, +d * k), (1 - d, 1 + d), **kwargs)  # bottom-left diagonal
-                ax9.plot((1 - d * k, 1 + d * k), (1 - d, 1 + d), **kwargs)  # bottom-right diagonal
-
-            else:
-                self.ax1 =   subplot2grid((r1 + r2*2 + w, 5), (0, 0),                  rowspan=r1,        colspan=5, fig=self.fig)
-                ax3 =   subplot2grid((r1 + r2*2 + w, 5), (r1 + w, 0),             rowspan=r2, colspan=4, fig=self.fig)
-                ax5 =   subplot2grid((r1 + r2*2 + w, 5), (r1 + r2 + w, 0),        rowspan=r2, colspan=4, fig=self.fig)
-                ax7 =   subplot2grid((r1 + r2*2 + w, 5), (r1 + w, 4),             rowspan=r2, colspan=1, fig=self.fig)
-                ax9 =   subplot2grid((r1 + r2*2 + w, 5), (r1 + r2 + w, 4),        rowspan=r2, colspan=1, fig=self.fig)
-
-                self.ax1.axis('equal')
-                self.ax1.tick_params(direction='in')
-                ax3.tick_params(direction='in')
-                ax3.xaxis.set_ticks_position('both')
-                ax5.tick_params(direction='in')
-                ax5.xaxis.set_ticks_position('both')
-                ax7.tick_params(direction='in')
-                ax9.tick_params(direction='in')
-        else:
-            r1, r2, w, r = 75*2, 20*2, 5*2, 1
-            if plot_params['Brake_1']:
-                self.ax1 =   subplot2grid((r1 + r2 + w + r, 5), (0, 0),                          rowspan=r1, colspan=5, fig=self.fig)
-                ax2 =   subplot2grid((r1 + r2 + w + r, 5), (r1 + w, 0),                     rowspan=int(r2/2), colspan=4, fig=self.fig)
-                ax3 =   subplot2grid((r1 + r2 + w + r, 5), (r1 + int(r2/2) + w + r, 0),     rowspan=int(r2/2), colspan=4, fig=self.fig)
-                ax6 =   subplot2grid((r1 + r2 + w + r, 5), (r1 + w, 4),                     rowspan=int(r2/2), colspan=1, fig=self.fig)
-                ax7 =   subplot2grid((r1 + r2 + w + r, 5), (r1 + int(r2/2) + w + r, 4),     rowspan=int(r2/2), colspan=1, fig=self.fig)
-
-                self.ax1.axis('equal')
-                self.ax1.tick_params(direction='in')
-                ax2.tick_params(direction='in')
-                ax2.xaxis.set_ticks_position('top')
-                ax3.tick_params(direction='in')
-                ax3.xaxis.set_ticks_position('bottom')
-                ax6.tick_params(direction='in')
-                ax7.tick_params(direction='in')
-
-                ax2.spines['bottom'].set_visible(False)
-                ax2.tick_params(labelbottom='off')
-                ax3.spines['top'].set_visible(False)
-
-                ax6.xaxis.set_visible(False)
-                ax6.spines['bottom'].set_visible(False)
-                ax6.tick_params(direction='in')
-                ax6.tick_params(labelbottom='off')
-                ax7.spines['top'].set_visible(False)
-
-                kwargs = dict(transform=ax2.transAxes, color='k', clip_on=False)
-                ax2.plot((-d, +d), (-d, +d), **kwargs)  # top-left diagonal
-                ax2.plot((1 - d, 1 + d), (-d, +d), **kwargs)  # top-right diagonal
-                kwargs.update(transform=ax3.transAxes)  # switch to the bottom axes
-                ax3.plot((-d, +d), (1 - d, 1 + d), **kwargs)  # bottom-left diagonal
-                ax3.plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)  # bottom-right diagonal
-
-                k = 6
-                kwargs.update(transform=ax6.transAxes)
-                ax6.plot((-d * k, +d * k), (-d, +d), **kwargs)  # top-left diagonal
-                ax6.plot((1 - d * k, 1 + d * k), (-d, +d), **kwargs)  # top-right diagonal
-                kwargs.update(transform=ax7.transAxes)  # switch to the bottom axes
-                ax7.plot((-d * k, +d * k), (1 - d, 1 + d), **kwargs)  # bottom-left diagonal
-                ax7.plot((1 - d * k, 1 + d * k), (1 - d, 1 + d), **kwargs)  # bottom-right diagonal
-
-            else:
-                self.ax1 =   subplot2grid((r1 + r2 + w, 5), (0, 0),      rowspan=r1, colspan=5, fig=self.fig)
-                ax3 =   subplot2grid((r1 + r2 + w, 5), (r1 + w, 0), rowspan=r2, colspan=4, fig=self.fig)
-                ax7 =   subplot2grid((r1 + r2 + w, 5), (r1 + w, 4), rowspan=r2, colspan=1, fig=self.fig)
-
-                self.ax1.axis('equal')
-                self.ax1.tick_params(direction='in')
-                ax3.tick_params(direction='in')
-                ax3.xaxis.set_ticks_position('both')
-                ax7.tick_params(direction='in')
-        
+                       
         self.cidpress   = self.img.mpl_connect('button_press_event', self.on_press)
         self.cidrelease = self.img.mpl_connect('button_release_event', self.on_release)
         self.cidmotion  = self.img.mpl_connect('motion_notify_event', self.on_motion)
         self.cidmotion  = self.img.mpl_connect('scroll_event', self.on_resize)
 
-        self.ax1.plot(-orbit_params['model'][:, 1], orbit_params['model'][:, 0], color=plot_params['color1'], linewidth=1)
-        for i in range(len(orbit_params['x'])):
-            self.ax1.plot([orbit_params['x'][i], -orbit_params['bind'][i, 1]], [orbit_params['y'][i], orbit_params['bind'][i, 0]], color=plot_params['color1'], linestyle='--', linewidth=0.8)
-        self.ax1.plot(orbit_params['x'][0], orbit_params['y'][0], color=plot_params['color1'], ls='', marker='o', mec='k', mfc='w', ms=10)
-        self.ax1.plot(orbit_params['x'][orbit_params['libPoints']], orbit_params['y'][orbit_params['libPoints']], color=plot_params['color1'], ls='', marker='^', mec='k', mfc='k', ms=5)
-        self.ax1.plot(orbit_params['x'][orbit_params['badPoints']], orbit_params['y'][orbit_params['badPoints']], color=plot_params['color1'], ls='', marker='x', mec='k', mfc='w', ms=5)
-        self.ax1.plot(orbit_params['x'][orbit_params['newPoints']], orbit_params['y'][orbit_params['newPoints']], color=plot_params['color1'], ls='', marker='o', mec='k', mfc='w', ms=5)
-        self.ax1.plot([0, -orbit_params['model'][0, 1]], [0, orbit_params['model'][0, 0]], color=plot_params['color1'], linestyle='-', linewidth=1.2)
-        
+        self.__plot_orbit(orbit_params)
         if orbit_params['litplot']:
-            self.ax1.plot(-orbit_params['lit_model'][:, 1], orbit_params['lit_model'][:, 0], color = plot_params['color2'], ls='-', linewidth=0.5)
-            for i in range(len(orbit_params['lit_x'])):
-                self.ax1.plot([orbit_params['lit_x'][i], -orbit_params['lit_bind'][i, 1]], [orbit_params['lit_y'][i], orbit_params['lit_bind'][i, 0]], color=plot_params['color2'], linestyle='--', linewidth=0.5)
-            self.ax1.plot([0, -orbit_params['lit_model'][0, 1]], [0, orbit_params['lit_model'][0, 0]], color=plot_params['color2'], linestyle='-', linewidth=0.5)
+            self.__plot_lit_orbit(orbit_params)
+        
         if plot_params['OrbitBox']:
+            self.__plot_orbit_box()
+        
+        if not orbit_params['fplot']:
+            self.__set_limits(plot_params)
+    
+        self.parent_widget.PlotParams.v_lim_x_min.setValue(self.ax_orbit.get_xlim()[0])
+        self.parent_widget.PlotParams.v_lim_x_max.setValue(self.ax_orbit.get_xlim()[1])
+        self.parent_widget.PlotParams.v_lim_y_min.setValue(self.ax_orbit.get_ylim()[0])
+        self.parent_widget.PlotParams.v_lim_y_max.setValue(self.ax_orbit.get_ylim()[1])
+
+        if plot_params['NDirect']:
+            self.__plot_north_direction(plot_params)
+
+        if plot_params['ODirect']:
+            self.__plot_orbit_direction(plot_params)
+        
+        self.__unknown_logic(self)
+
+        self.img.draw()
+
+    def __plot_orbit(self, orbit_params):
+        self.ax_orbit.plot(-orbit_params['model'][:, 1], orbit_params['model'][:, 0], color=plot_params['color1'], linewidth=1)
+        for i in range(len(orbit_params['x'])):
+            self.ax_orbit.plot([orbit_params['x'][i], -orbit_params['bind'][i, 1]], [orbit_params['y'][i], orbit_params['bind'][i, 0]], color=plot_params['color1'], linestyle='--', linewidth=0.8)
+        self.ax_orbit.plot(orbit_params['x'][0], orbit_params['y'][0], color=plot_params['color1'], ls='', marker='o', mec='k', mfc='w', ms=10)
+        self.ax_orbit.plot(orbit_params['x'][orbit_params['libPoints']], orbit_params['y'][orbit_params['libPoints']], color=plot_params['color1'], ls='', marker='^', mec='k', mfc='k', ms=5)
+        self.ax_orbit.plot(orbit_params['x'][orbit_params['badPoints']], orbit_params['y'][orbit_params['badPoints']], color=plot_params['color1'], ls='', marker='x', mec='k', mfc='w', ms=5)
+        self.ax_orbit.plot(orbit_params['x'][orbit_params['newPoints']], orbit_params['y'][orbit_params['newPoints']], color=plot_params['color1'], ls='', marker='o', mec='k', mfc='w', ms=5)
+        self.ax_orbit.plot([0, -orbit_params['model'][0, 1]], [0, orbit_params['model'][0, 0]], color=plot_params['color1'], linestyle='-', linewidth=1.2)
+
+    def __plot_lit_orbit(self, orbit_params):
+        self.ax_orbit.plot(-orbit_params['lit_model'][:, 1], orbit_params['lit_model'][:, 0], color = plot_params['color2'], ls='-', linewidth=0.5)
+        for i in range(len(orbit_params['lit_x'])):
+            self.ax_orbit.plot([orbit_params['lit_x'][i], -orbit_params['lit_bind'][i, 1]], [orbit_params['lit_y'][i], orbit_params['lit_bind'][i, 0]], color=plot_params['color2'], linestyle='--', linewidth=0.5)
+        self.ax_orbit.plot([0, -orbit_params['lit_model'][0, 1]], [0, orbit_params['lit_model'][0, 0]], color=plot_params['color2'], linestyle='-', linewidth=0.5)
+
+    def __plot_orbit_box(self, orbit_params):
             text_params = dict(
                 porb_t = '$P_{orb}$',
                 T0_t = '$T_{0}$',
@@ -401,48 +149,42 @@ class OrbitImage(QWidget):
                 w = '{}$ \pm ${}'.format(*orbit_params['w'].split('|')) if len(orbit_params['w'].split('|')) == 2 else orbit_params['w'],
                 i = '{}$ \pm ${}'.format(*orbit_params['i'].split('|')) if len(orbit_params['i'].split('|')) == 2 else orbit_params['i']    
             )
-            textstr = ('''     {obj_name}
-{porb_t} = {p_orb} {y}
-{T0_t}  = {T_0} {y}
-$e$   = {e}
-$a$   = {a} {arcsec}
-$\Omega$   = {W}\u00B0
-$\omega$   = {w}\u00B0
-$i$    = {i}\u00B0'''.format(**text_params))
+            textstr = ('     {obj_name}\n\
+                {porb_t} = {p_orb} {y}\n\
+                {T0_t}  = {T_0} {y}\n\
+                $e$   = {e}\n\
+                $a$   = {a} {arcsec}\n\
+                $\Omega$   = {W}\u00B0\n\
+                $\omega$   = {w}\u00B0\n\
+                $i$    = {i}\u00B0'.format(**text_params))
             props = dict(boxstyle='round', facecolor='white', alpha=0.2)
             self.ax1.text(plot_params['box_x'], plot_params['box_y'], textstr, fontsize=10, fontname='monospace', style='normal', va='top', ha='left', bbox=props)
-        if not orbit_params['fplot']:
-            xmin = plot_params['lim_x_min']#self.pd.v_x_min.value()
+    
+    def __set_limits(self, plot_params):
+            xmin = plot_params['lim_x_min']
             xmax = plot_params['lim_x_max']
             ymin = plot_params['lim_y_min']
             ymax = plot_params['lim_y_max']
-            #if xmax - xmin > ymax - ymin:
-            #    ymin, ymax = [(ymax+ymin)/2 - (xmax-xmin)/2, (ymax+ymin)/2 + (xmax-xmin)/2]
-            #elif xmax - xmin < ymax - ymin:
-            #    xmin, xmax = [(xmax+xmin)/2 - (ymax-ymin)/2, (xmax+xmin)/2 + (ymax-ymin)/2]
             self.ax1.set_xlim(xmin, xmax)
             self.ax1.set_ylim(ymin, ymax)
-            
-        self.parent_widget.PlotParams.v_lim_x_min.setValue(self.ax1.get_xlim()[0])
-        self.parent_widget.PlotParams.v_lim_x_max.setValue(self.ax1.get_xlim()[1])
-        self.parent_widget.PlotParams.v_lim_y_min.setValue(self.ax1.get_ylim()[0])
-        self.parent_widget.PlotParams.v_lim_y_max.setValue(self.ax1.get_ylim()[1])
-        
-        if plot_params['NDirect']:
-            self.ax1.arrow(plot_params['north_x'], plot_params['north_y'], -plot_params['north_s']*6, 0, head_width=plot_params['north_s'], head_length=plot_params['north_s']*2, fc='k', ec='k')
-            self.ax1.arrow(plot_params['north_x'], plot_params['north_y'], 0, plot_params['north_s']*6, head_width=plot_params['north_s'], head_length=plot_params['north_s']*2, fc='k', ec='k')
-            self.ax1.text(plot_params['north_x']-plot_params['north_s']*8 , plot_params['north_y']+plot_params['north_s'], 'E', fontsize=10, fontname='monospace', style='oblique')
-            self.ax1.text(plot_params['north_x']-plot_params['north_s']*2, plot_params['north_y']+plot_params['north_s']*8, 'N', fontsize=10, fontname='monospace', style='oblique')
-        if plot_params['ODirect']:    
-            self.ax1.arrow(plot_params['dir_x'], plot_params['dir_y'], plot_params['dir_dx'], plot_params['dir_dy'], head_width=plot_params['north_s'], head_length=plot_params['north_s']*2, fc='k', ec='k')
-        
+    
+    def __plot_north_direction(self, plot_params):
+        self.ax_orbit.arrow(plot_params['north_x'], plot_params['north_y'], -plot_params['north_s']*6, 0, head_width=plot_params['north_s'], head_length=plot_params['north_s']*2, fc='k', ec='k')
+        self.ax_orbit.arrow(plot_params['north_x'], plot_params['north_y'], 0, plot_params['north_s']*6, head_width=plot_params['north_s'], head_length=plot_params['north_s']*2, fc='k', ec='k')
+        self.ax_orbit.text(plot_params['north_x']-plot_params['north_s']*8 , plot_params['north_y']+plot_params['north_s'], 'E', fontsize=10, fontname='monospace', style='oblique')
+        self.ax_orbit.text(plot_params['north_x']-plot_params['north_s']*2, plot_params['north_y']+plot_params['north_s']*8, 'N', fontsize=10, fontname='monospace', style='oblique')
+    
+    def __plot_orbit_direction(self, plot_params):
+        self.ax_orbit.arrow(plot_params['dir_x'], plot_params['dir_y'], plot_params['dir_dx'], plot_params['dir_dy'], head_width=plot_params['north_s'], head_length=plot_params['north_s']*2, fc='k', ec='k')
+
+    def __unknown_logic(self, orbit_params):
         with open(self.parent_widget.v_output.text()) as f:
             raw = f.read().split('\n')
-        output = array([])
+        # output = array([])
         data = array([])
         theta = array([])
         rho = array([])
-        fastcalc = lambda rho, drho, dtheta: sqrt(rho**2 + (rho + drho)**2 - 2*rho*(rho+drho)*cos(deg2rad(dtheta)))
+        fastcalc = lambda rho, drho, dtheta: sqrt(rho**2 + (rho + drho)**2 - 2 * rho * (rho + drho) * cos(deg2rad(dtheta)))
         for line in raw[15:]:
             if not line or line.startswith('#'): continue
             data = append(data, float(line.split()[0]))
@@ -467,6 +209,117 @@ $i$    = {i}\u00B0'''.format(**text_params))
                 epochs_ticks = arange(floor((data.min()-0.05)*10)/10, ceil((data.max()+0.05)*10)/10+step/2, step)
                 if epochs_ticks.min() < data.min() and epochs_ticks.max() > data.max() and epochs_ticks.size <= 7:
                     break
+        
+    def _plot_orbit_only(self, plot_params):
+        self.setFixedSize(600, 600)
+        self.ax_orbit = create_axis(
+            self.fig.add_subplot(111),
+            plot_params,
+        )
+    
+    def _plot_with_residuals(self, plot_params):
+        self.setFixedSize(600, 600+25+60+60)
+        gridspec = self.fig.add_gridspec(5, 2,
+            width_ratios=(8, 2), height_ratios=(600, 25, 60, 5, 60),
+            left=0.1, right=0.95, bottom=0.05, top=0.95,
+            wspace=0.2, hspace=0)
+        
+        self.ax_orbit = create_axis(
+            self.fig.add_subplot(gridspec[0, :]),
+            plot_params
+            )
+        if plot_params['Brake_1']:
+            self.ax_residuals_1 = create_axis(
+                self.fig.add_subplot(gridspec[2, 0]),
+                plot_params,
+                axis_type='residuals',
+                bottom=False,
+                )
+            self.ax_residuals_2 = create_axis(
+                self.fig.add_subplot(gridspec[4, 0]),
+                plot_params,
+                axis_type='residuals',
+                top=False,
+                )
+        else:
+            self.ax_residuals_1 = create_axis(
+                self.fig.add_subplot(gridspec[2:, 0]),
+                plot_params,
+                axis_type='residuals'
+                )
+
+        self.ax_box_1 = create_axis(
+            self.fig.add_subplot(gridspec[2:, 1]),
+            plot_params,
+            axis_type='box'
+        )
+
+    def _plot_with_rho_and_theta(self, plot_params):
+        self.setFixedSize(600, 600+25+60+60+60+60)
+        gridspec = self.fig.add_gridspec(8, 2,
+            width_ratios=(8, 2), height_ratios=(600, 25, 60, 5, 60, 60, 5, 60),
+            left=0.1, right=0.95, bottom=0.05, top=0.95,
+            wspace=0.2, hspace=0)
+
+        self.ax_orbit = create_axis(
+            self.fig.add_subplot(gridspec[0, :]),
+            plot_params
+            )
+
+        if plot_params['Brake_1']:
+            self.ax_rho_1 = create_axis(
+                self.fig.add_subplot(gridspec[2, 0]),
+                plot_params,
+                axis_type='errors',
+                bottom=False,
+                )
+            self.ax_rho_2 = create_axis(
+                self.fig.add_subplot(gridspec[4, 0]),
+                plot_params,
+                axis_type='errors',
+                top=False,
+                )
+        else:
+            self.ax_rho_1 = create_axis(
+                self.fig.add_subplot(gridspec[2:5, 0]),
+                plot_params,
+                axis_type='errors'
+                )
+        
+        if plot_params['Brake_2']:
+            self.ax_theta_1 = create_axis(
+                self.fig.add_subplot(gridspec[5, 0]),
+                plot_params,
+                axis_type='errors',
+                bottom=False,
+                )
+            self.ax_theta_2 = create_axis(
+                self.fig.add_subplot(gridspec[7, 0]),
+                plot_params,
+                axis_type='errors',
+                top=False,
+                )
+        else:
+            self.ax_theta_1 = create_axis(
+                self.fig.add_subplot(gridspec[5:, 0]),
+                plot_params,
+                axis_type='errors'
+                )
+
+        self.ax_box_1 = create_axis(
+            self.fig.add_subplot(gridspec[2:5, 1]),
+            plot_params,
+            axis_type='box'
+        )
+
+        self.ax_box_2 = create_axis(
+            self.fig.add_subplot(gridspec[5:, 1]),
+            plot_params,
+            axis_type='box'
+        )
+        return
+        
+        
 
         if plot_params['SubMode']:
             ax3.plot(data[0], drho[0], color=plot_params['color1'], ls='', marker='o', mec='k', mfc='w', ms=10)

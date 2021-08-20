@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QComboBox, QWidget, QGridLayout, QLineEdit, QLabel, QWidget, QGridLayout, QPushButton, QFileDialog, QSpinBox, QRadioButton, QDoubleSpinBox
+from PySide2.QtWidgets import QComboBox, QWidget, QGridLayout, QLineEdit, QLabel, QWidget, QGridLayout, QPushButton, QFileDialog, QSpinBox, QRadioButton, QDoubleSpinBox, QSlider
 from PySide2.QtGui import QPixmap, QImage, QIcon
 from PySide2.QtCore import Qt, QPoint
 
@@ -34,6 +34,15 @@ class PlotParams(QWidget):
         self.b_SubMode = QPushButton('Residuals')
         self.b_SubMode.setCheckable(True)
         self.b_SubMode.clicked.connect(self.c_SubMode)
+
+        self.v_brake_1_rate = QSlider(Qt.Horizontal)
+        self.v_brake_1_rate.setRange(0, 8)
+        self.v_brake_1_rate.setValue(4)
+        self.v_brake_1_rate.setTickPosition(QSlider.TicksAbove)
+        self.v_brake_2_rate = QSlider(Qt.Horizontal)
+        self.v_brake_2_rate.setRange(0, 8)
+        self.v_brake_2_rate.setValue(4)
+        self.v_brake_2_rate.setTickPosition(QSlider.TicksAbove)
 
         self.b_OrbitOnly = QPushButton('Only orbit')
         self.b_OrbitOnly.setCheckable(True)
@@ -123,9 +132,9 @@ class PlotParams(QWidget):
         self.main_layout.addWidget(self.v_lim_x_max,   i, 3)
 
         self.main_layout.addWidget(QLabel('x'), i, 4)
-        self.main_layout.addWidget(self.v_dir_x,        i, 5)
+        self.main_layout.addWidget(self.v_dir_x, i, 5)
         self.main_layout.addWidget(QLabel('\u0394x'), i, 6)
-        self.main_layout.addWidget(self.v_dir_dx,        i, 7)
+        self.main_layout.addWidget(self.v_dir_dx, i, 7)
 
         i += 1; j = 0
         self.main_layout.addWidget(QLabel('y (мин)'),  i, 0)
@@ -143,6 +152,10 @@ class PlotParams(QWidget):
         self.main_layout.addWidget(self.b_Brake_1, i, j, 1, 2); j+=2
         self.main_layout.addWidget(QBorderedLabel('Пределы подграфика №2'), i, j, 1, 2); j+=2
         self.main_layout.addWidget(self.b_Brake_2, i, j, 1, 2); j+=2 
+        
+        i += 1; j = 0
+        self.main_layout.addWidget(self.v_brake_1_rate, i, j, 1, 4); j+=4
+        self.main_layout.addWidget(self.v_brake_2_rate, i, j, 1, 4)
 
         i += 1; j = 0
         self.main_layout.addWidget(QLabel('От'),        i, j); j+=1
