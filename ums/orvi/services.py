@@ -1,6 +1,7 @@
-from numpy import zeros, sqrt, cos, sin, deg2rad, tan, arctan, pi, arange, fromiter
+from numpy import zeros, sqrt, cos, sin, deg2rad, tan, arctan, pi, arange, fromiter, array
 
 diagonal_size = 0.025
+
 
 class OrbitalSolution:
     def __init__(self):
@@ -8,9 +9,9 @@ class OrbitalSolution:
         self.RA = 0
         self.DEC = 0
         self.P = 0
-        self.err_P = 0 
+        self.err_P = 0
         self.T0 = 0
-        self.err_T0 = 0 
+        self.err_T0 = 0
         self.a = 0
         self.a_err = 0
         self.e = 0
@@ -21,8 +22,8 @@ class OrbitalSolution:
         self.w_err = 0
         self.i = 0
         self.i_err = 0
-    
-    def setParametersWithErrors(self, P, P_e, T0, T0_e, a, a_e, e, e_e, W, W_e, w, w_e, i, i_e):
+
+    def set_parameters_with_errors(self, P, P_e, T0, T0_e, a, a_e, e, e_e, W, W_e, w, w_e, i, i_e):
         self.P = P
         self.T0 = T0
         self.a = a
@@ -40,8 +41,8 @@ class OrbitalSolution:
         self.W_err = W_e
         self.w_err = w_e
         self.i_err = i_e
-    
-    def setParameters(self, P, T0, a, e, W, w, i):
+
+    def set_parameters(self, P, T0, a, e, W, w, i):
         self.P = P
         self.T0 = T0
         self.a = a
@@ -50,13 +51,14 @@ class OrbitalSolution:
         self.w = w
         self.i = i
 
-    def setInfo(self, parameter, value):
+    def set_info(self, parameter, value):
         if parameter == 'name':
             self.NAME = value
         elif parameter == 'RA':
             self.RA = value
         elif parameter == 'DEC':
             self.DEC = value
+
 
 class Point:
     def __init__(self, epoch, theta, rho, weight, koeff):
@@ -66,12 +68,17 @@ class Point:
         self.weight = weight
         self.koeff = koeff
 
+
 def ephemeris(orb_sol, epoch_list, rho=False, rv=False):
     output_ephemeris = []
-    A = orb_sol.a * (+cos(orb_sol.w_rad) * cos(orb_sol.W_rad) - sin(orb_sol.w_rad) * sin(orb_sol.W_rad) * cos(orb_sol.i_rad))
-    B = orb_sol.a * (+cos(orb_sol.w_rad) * sin(orb_sol.W_rad) + sin(orb_sol.w_rad) * cos(orb_sol.W_rad) * cos(orb_sol.i_rad))
-    F = orb_sol.a * (-sin(orb_sol.w_rad) * cos(orb_sol.W_rad) - cos(orb_sol.w_rad) * sin(orb_sol.W_rad) * cos(orb_sol.i_rad))
-    G = orb_sol.a * (-sin(orb_sol.w_rad) * sin(orb_sol.W_rad) + cos(orb_sol.w_rad) * cos(orb_sol.W_rad) * cos(orb_sol.i_rad))
+    A = orb_sol.a * (
+                +cos(orb_sol.w_rad) * cos(orb_sol.W_rad) - sin(orb_sol.w_rad) * sin(orb_sol.W_rad) * cos(orb_sol.i_rad))
+    B = orb_sol.a * (
+                +cos(orb_sol.w_rad) * sin(orb_sol.W_rad) + sin(orb_sol.w_rad) * cos(orb_sol.W_rad) * cos(orb_sol.i_rad))
+    F = orb_sol.a * (
+                -sin(orb_sol.w_rad) * cos(orb_sol.W_rad) - cos(orb_sol.w_rad) * sin(orb_sol.W_rad) * cos(orb_sol.i_rad))
+    G = orb_sol.a * (
+                -sin(orb_sol.w_rad) * sin(orb_sol.W_rad) + cos(orb_sol.w_rad) * cos(orb_sol.W_rad) * cos(orb_sol.i_rad))
     for epoch in epoch_list:
         time_delta = epoch - orb_sol.T0
         phase = (time_delta / orb_sol.P) % 1
@@ -84,11 +91,12 @@ def ephemeris(orb_sol, epoch_list, rho=False, rv=False):
             E = float(E1)
             E1 = E + (anomaly + orb_sol.e * sin(E) - E) / (1 - orb_sol.e * cos(E))
         V = 2 * arctan(sqrt((1 + orb_sol.e) / (1 - orb_sol.e)) * tan(E1 / 2))
-        R = (1 - orb_sol.e**2) / (1. + orb_sol.e * cos(V))
+        R = (1 - orb_sol.e ** 2) / (1. + orb_sol.e * cos(V))
         X = R * cos(V)
         Y = R * sin(V)
         output_ephemeris.append((A * X + F * Y, B * X + G * Y))
-    return output_ephemeris
+    return array(output_ephemeris)
+
 
 def correct(points, T0):
     for number, point in enumerate(points):
@@ -98,7 +106,8 @@ def correct(points, T0):
             points[number].epoch = 1900.0 + (point.epoch - 15020.31352) / 365.242198781
     return points
 
-def getPoints(fName, orbital_solution):
+
+def get_points(fName, orbital_solution):
     points = []
 
     with open(fName) as f:
@@ -118,19 +127,21 @@ def getPoints(fName, orbital_solution):
         points[number].theta += (2000 - point.epoch) * PR
     return points
 
-def findExt(data, t):
-    if t=='min':
+
+def find_ext(data, t):
+    if t == 'min':
         if min(data[0]) < min(data[1]):
             return min(data[0])
         else:
             return min(data[1])
-    elif t=='max':
+    elif t == 'max':
         if max(data[0]) > max(data[1]):
             return max(data[0])
         else:
             return max(data[1])
 
-def getOrbit(points, orb_sol):
+
+def get_orbit(points, orb_sol):
     num_of_points = 500
 
     epochs = fromiter((point.epoch for point in points), dtype='float32')
@@ -139,35 +150,42 @@ def getOrbit(points, orb_sol):
 
     mod_epochs = arange(num_of_points) / (num_of_points - 1) * orb_sol.P + orb_sol.T0
     xye = ephemeris(orb_sol, mod_epochs)
-    xobs =  -rhos * sin(thetas)
+    xobs = -rhos * sin(thetas)
     yobs = rhos * cos(thetas)
     xy0 = ephemeris(orb_sol, epochs)
     return xye, xy0, xobs, yobs
 
+def calculate_residuals(orbit_params, plot_params):
+    pass
+
+def get_tick_positions_for_epochs():
+    pass
+
 def create_axis(axis, plot_params, axis_type='orbit', bottom=True, top=True):
-        axis.tick_params(direction='in')
-        axis.xaxis.set_ticks_position('both')
-        if axis_type == 'orbit':
-            axis.axis('equal')
-        elif axis_type in ['residuals', 'errors']:
-            if not bottom:
-                axis.tick_params(labelbottom='off')
-                axis.spines['bottom'].set_visible(False)
-                axis.xaxis.set_ticks_position('top')
-                kwargs = dict(transform=axis.transAxes, color='k', clip_on=False)
-                axis.plot((-diagonal_size, +diagonal_size), (-diagonal_size, +diagonal_size), **kwargs)
-                axis.plot((1 - diagonal_size, 1 + diagonal_size), (-diagonal_size, +diagonal_size), **kwargs)
-            elif not top:
-                axis.tick_params(labeltop='off')
-                axis.spines['top'].set_visible(False)
-                axis.xaxis.set_ticks_position('bottom')
-                kwargs = dict(transform=axis.transAxes, color='k', clip_on=False)
-                axis.plot((-diagonal_size, +diagonal_size), (1 - diagonal_size, 1 + diagonal_size), **kwargs)  # bottom-left diagonal
-                axis.plot((1 - diagonal_size, 1 + diagonal_size), (1 - diagonal_size, 1 + diagonal_size), **kwargs)
-            else:
-                pass
-        elif axis_type == 'box':
-            pass
+    axis.tick_params(direction='in')
+    axis.xaxis.set_ticks_position('both')
+    if axis_type == 'orbit':
+        axis.axis('equal')
+    elif axis_type in ['residuals', 'errors']:
+        if not bottom:
+            axis.tick_params(labelbottom='off')
+            axis.spines['bottom'].set_visible(False)
+            axis.xaxis.set_ticks_position('top')
+            kwargs = dict(transform=axis.transAxes, color='k', clip_on=False)
+            axis.plot((-diagonal_size, +diagonal_size), (-diagonal_size, +diagonal_size), **kwargs)
+            axis.plot((1 - diagonal_size, 1 + diagonal_size), (-diagonal_size, +diagonal_size), **kwargs)
+        elif not top:
+            axis.tick_params(labeltop='off')
+            axis.spines['top'].set_visible(False)
+            axis.xaxis.set_ticks_position('bottom')
+            kwargs = dict(transform=axis.transAxes, color='k', clip_on=False)
+            axis.plot((-diagonal_size, +diagonal_size), (1 - diagonal_size, 1 + diagonal_size),
+                      **kwargs)  # bottom-left diagonal
+            axis.plot((1 - diagonal_size, 1 + diagonal_size), (1 - diagonal_size, 1 + diagonal_size), **kwargs)
         else:
-            raise ValueError(f'Unknown type of axis: {axis_type}')
-        return axis
+            pass
+    elif axis_type == 'box':
+        pass
+    else:
+        raise ValueError(f'Unknown type of axis: {axis_type}')
+    return axis

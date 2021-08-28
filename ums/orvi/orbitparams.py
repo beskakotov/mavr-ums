@@ -1,12 +1,14 @@
-from PySide2.QtWidgets import QGraphicsItem, QWidget, QGridLayout, QLineEdit, QLabel, QWidget, QGridLayout, QPushButton, QFileDialog, QSpinBox, QRadioButton
+from PySide2.QtWidgets import QGraphicsItem, QWidget, QGridLayout, QLineEdit, QLabel, QWidget, QGridLayout, QPushButton, \
+    QFileDialog, QSpinBox, QRadioButton
 from PySide2.QtGui import QPixmap, QImage, QIcon
 from PySide2.QtCore import Qt, QPoint
 
-from ums.orvi.services import getOrbit, getPoints, OrbitalSolution
+from ums.orvi.services import get_orbit, get_points, OrbitalSolution
 from ums.common.functions import is_numeric
 
+
 class OrbitParams(QWidget):
-    def __init__(self, parent = None):
+    def __init__(self, parent=None):
         QWidget.__init__(self, parent)
 
         self.__init_interface()
@@ -79,7 +81,7 @@ class OrbitParams(QWidget):
         self.main_layout.addWidget(self.v_w, i, 6)
         self.main_layout.addWidget(self.v_i, i, 7)
 
-        i += 1        
+        i += 1
         self.main_layout.addWidget(self.lit_l, i, 0)
         self.main_layout.addWidget(self.lit_v_P, i, 1)
         self.main_layout.addWidget(self.lit_v_T0, i, 2)
@@ -90,7 +92,7 @@ class OrbitParams(QWidget):
         self.main_layout.addWidget(self.lit_v_i, i, 7)
 
         self.setLayout(self.main_layout)
-    
+
     def clear_all(self):
         self.clear_main_orbit()
         self.clear_lit_orbit()
@@ -131,7 +133,7 @@ class OrbitParams(QWidget):
             self.lit_v_W.setText(prm['lit_W'])
             self.lit_v_w.setText(prm['lit_w'])
             self.lit_v_i.setText(prm['lit_i'])
-            
+
     def collectParams(self, i_path, o_path, from_interface=False):
         orbital_solution = OrbitalSolution()
         literature_orbital_solution = None
@@ -149,11 +151,11 @@ class OrbitParams(QWidget):
                 continue
             b = line.split()
             if b[0] == 'Object:':
-                orbital_solution.setInfo('name', ' '.join(b[1:]))
+                orbital_solution.set_info('name', ' '.join(b[1:]))
             elif b[0] == 'RA:':
-                orbital_solution.setInfo('RA', 15 * float(b[1]))
+                orbital_solution.set_info('RA', 15 * float(b[1]))
             elif b[0] == 'Dec:':
-                orbital_solution.setInfo('DEC', float(b[1]))
+                orbital_solution.set_info('DEC', float(b[1]))
             elif b[0] == 'P':
                 o_P = [b[1], b[2]]
             elif b[0] == 'T0':
@@ -192,7 +194,7 @@ class OrbitParams(QWidget):
         newPoints = []
         badPoints = []
 
-        line_number=0
+        line_number = 0
         for line_number, line in enumerate(bdata):
             if not line:
                 continue
@@ -203,7 +205,7 @@ class OrbitParams(QWidget):
             else:
                 libPoints.append(line_number)
 
-        orbital_solution.setParametersWithErrors(
+        orbital_solution.set_parameters_with_errors(
             *map(float, o_P),
             *map(float, o_T0),
             *map(float, o_a),
@@ -222,29 +224,30 @@ class OrbitParams(QWidget):
             self.lit_v_w.text(),
             self.lit_v_i.text()
         )
-        
+
         if all(all_lit_orbit_params) and all(*map(is_numeric, all_lit_orbit_params)):
             literature_orbital_solution = OrbitalSolution()
-            literature_orbital_solution.setParameters(
+            literature_orbital_solution.set_parameters(
                 *map(float, (
-                        self.lit_v_P.text(),
-                        self.lit_v_T0.text(),
-                        self.lit_v_e.text(),
-                        self.lit_v_a.text(),
-                        self.lit_v_W.text(),
-                        self.lit_v_w.text(),
-                        self.lit_v_i.text()
+                    self.lit_v_P.text(),
+                    self.lit_v_T0.text(),
+                    self.lit_v_e.text(),
+                    self.lit_v_a.text(),
+                    self.lit_v_W.text(),
+                    self.lit_v_w.text(),
+                    self.lit_v_i.text()
                 ))
             )
 
-        position_list = getPoints(i_path, orbital_solution)
-        model, bind, x, y = getOrbit(position_list, orbital_solution)
+        position_list = get_points(i_path, orbital_solution)
+        model, bind, x, y = get_orbit(position_list, orbital_solution)
 
         if literature_orbital_solution:
-            literature_position_list = getPoints(i_path, literature_orbital_solution)
-            literature_model, literature_bind, literature_x, literature_y = getOrbit(literature_position_list, literature_orbital_solution)
-        
-        output = {
+            literature_position_list = get_points(i_path, literature_orbital_solution)
+            literature_model, literature_bind, literature_x, literature_y = get_orbit(literature_position_list,
+                                                                                      literature_orbital_solution)
+
+        orbit_params = {
             'orbital_solution': orbital_solution,
             'literature_orbital_solution': literature_orbital_solution,
             'position_list': position_list,
@@ -252,17 +255,17 @@ class OrbitParams(QWidget):
             'bind': bind,
             'x': x,
             'y': y,
-            'libPoints' : libPoints,
-            'newPoints' : newPoints,
-            'badPoints' : badPoints,
+            'libPoints': libPoints,
+            'newPoints': newPoints,
+            'badPoints': badPoints,
             'first_time_plot': first_time_plot,
         }
 
         if literature_orbital_solution:
-            output['literature_position_list'] = literature_position_list
-            output['literature_model'] = literature_model
-            output['literature_bind'] = literature_bind
-            output['literature_x'] = literature_x
-            output['literature_y'] = literature_y
+            orbit_params['literature_position_list'] = literature_position_list
+            orbit_params['literature_model'] = literature_model
+            orbit_params['literature_bind'] = literature_bind
+            orbit_params['literature_x'] = literature_x
+            orbit_params['literature_y'] = literature_y
 
-        return output
+        return orbit_params
