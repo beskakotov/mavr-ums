@@ -1,4 +1,8 @@
-from numpy import zeros, sqrt, cos, sin, deg2rad, tan, arctan, pi, arange, fromiter, array
+from numpy import (
+    sqrt, cos, sin, deg2rad, tan,
+    arctan, pi, arange, fromiter, array,
+    unique, linspace, floor, ceil
+)
 
 diagonal_size = 0.025
 
@@ -155,11 +159,31 @@ def get_orbit(points, orb_sol):
     xy0 = ephemeris(orb_sol, epochs)
     return xye, xy0, xobs, yobs
 
-def calculate_residuals(orbit_params, plot_params):
-    pass
+def calculate_residuals(orbit_params):
+    return fromiter(
+        map(
+            lambda X, Y, X_bind, Y_bind: sqrt((X-X_bind)**2 + (Y - Y_bind)**2),
+            orbit_params['x'],
+            orbit_params['y'],
+            -orbit_params['bind'][:, 1],
+            orbit_params['bind'][:, 0]
+        ),
+        float
+    )
 
-def get_tick_positions_for_epochs():
-    pass
+def get_tick_positions_for_epochs(data):
+    if data.max() - data.min() > 2:
+        epochs_ticks = unique(linspace(floor(data.min()), ceil(data.max()), 6, dtype='uint16'))
+    else:
+        step = 0
+        while True:
+            step += 0.1
+            if step > data.max() - data.min():
+                exit()
+            epochs_ticks = arange(floor((data.min()-0.05)*10)/10, ceil((data.max()+0.05)*10)/10+step/2, step)
+            if epochs_ticks.min() < data.min() and epochs_ticks.max() > data.max() and epochs_ticks.size <= 7:
+                break
+    return epochs_ticks
 
 def create_axis(axis, plot_params, axis_type='orbit', bottom=True, top=True):
     axis.tick_params(direction='in')
@@ -179,13 +203,27 @@ def create_axis(axis, plot_params, axis_type='orbit', bottom=True, top=True):
             axis.spines['top'].set_visible(False)
             axis.xaxis.set_ticks_position('bottom')
             kwargs = dict(transform=axis.transAxes, color='k', clip_on=False)
-            axis.plot((-diagonal_size, +diagonal_size), (1 - diagonal_size, 1 + diagonal_size),
-                      **kwargs)  # bottom-left diagonal
+            axis.plot((-diagonal_size, +diagonal_size), (1 - diagonal_size, 1 + diagonal_size), **kwargs)
             axis.plot((1 - diagonal_size, 1 + diagonal_size), (1 - diagonal_size, 1 + diagonal_size), **kwargs)
         else:
             pass
     elif axis_type == 'box':
-        pass
+        axis.get_xaxis().set_visible(False)
+        k = 4
+        if not bottom:
+            axis.tick_params(labelbottom='off')
+            axis.spines['bottom'].set_visible(False)
+            axis.xaxis.set_ticks_position('top')
+            kwargs = dict(transform=axis.transAxes, color='k', clip_on=False)
+            axis.plot((-diagonal_size*k, +diagonal_size*k), (-diagonal_size*k, +diagonal_size*k), **kwargs)
+            axis.plot((1 - diagonal_size*k, 1 + diagonal_size*k), (-diagonal_size*k, +diagonal_size*k), **kwargs)
+        elif not top:
+            axis.tick_params(labeltop='off')
+            axis.spines['top'].set_visible(False)
+            axis.xaxis.set_ticks_position('bottom')
+            kwargs = dict(transform=axis.transAxes, color='k', clip_on=False)
+            axis.plot((-diagonal_size*k, +diagonal_size*k), (1 - diagonal_size*k, 1 + diagonal_size*k), **kwargs)
+            axis.plot((1 - diagonal_size*k, 1 + diagonal_size*k), (1 - diagonal_size*k, 1 + diagonal_size*k), **kwargs)
     else:
         raise ValueError(f'Unknown type of axis: {axis_type}')
     return axis

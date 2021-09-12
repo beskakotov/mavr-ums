@@ -96,10 +96,10 @@ class OrVI_GUI(QWidget):
             self.PlotParams.clear_all()
     
     def c_OpenO(self):
-        fName = QFileDialog.getOpenFileName(self, 'Open output file', self.last_path, "*.out")[0]
-        if fName:
-            self.last_path = path.dirname(fName)
-            self.v_output.setText(fName)
+        file_name = QFileDialog.getOpenFileName(self, 'Open output file', self.last_path, "*.out")[0]
+        if file_name:
+            self.last_path = path.dirname(file_name)
+            self.v_output.setText(file_name)
     
     def c_Source(self):
         if self.b_Source.isChecked():

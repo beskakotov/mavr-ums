@@ -144,8 +144,7 @@ class OrbitParams(QWidget):
             data = f.read().split('\n')
             adata = data[:13]
             bdata = data[15:]
-
-        first_time_plot = bool(self.v_name.text())
+        first_time_plot = not bool(self.v_name.text())
         for line in adata:
             if not line or line.startswith('#'):
                 continue
@@ -204,7 +203,7 @@ class OrbitParams(QWidget):
                 badPoints.append(line_number)
             else:
                 libPoints.append(line_number)
-
+        print(badPoints)
         orbital_solution.set_parameters_with_errors(
             *map(float, o_P),
             *map(float, o_T0),
