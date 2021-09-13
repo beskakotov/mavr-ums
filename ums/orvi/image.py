@@ -82,8 +82,6 @@ class OrbitImage(QWidget):
 
     def _setup_plot_residuals(self, plot_params):
         self.setFixedSize(600, 600 + 25 + 60 + 60)
-        # plot_params['sub_1_brake_rate']
-        # plot_params['sub_2_brake_rate']
         gridspec = self.fig.add_gridspec(5, 2,
             width_ratios=(8, 2), height_ratios=(600, 25, int(120 * plot_params['sub_1_brake_rate'] / 10), 5, int(120 * (10 - plot_params['sub_1_brake_rate']) / 10)),
             left=0.1, right=0.95, bottom=0.05, top=0.95,
@@ -165,8 +163,6 @@ class OrbitImage(QWidget):
                 plot_params,
                 axis_type='box'
             )
-
-        
 
     def _setup_plot_rhos_and_thetas(self, plot_params):
         self.setFixedSize(600, 600 + 25 + 60 + 60 + 60 + 60)
@@ -519,12 +515,10 @@ class OrbitImage(QWidget):
         self.ax_residuals_1.plot(epochs[orbit_params['newPoints']], residuals[orbit_params['newPoints']], color=plot_params['color1'], ls='', marker='o', mec='k', mfc='w', ms=5)
         self.ax_residuals_1.plot(epochs[orbit_params['badPoints']], residuals[orbit_params['badPoints']], color=plot_params['color1'], ls='', marker='x', mec='k', mfc='k', ms=5)
         self.ax_residuals_1.plot(epochs[orbit_params['libPoints']], residuals[orbit_params['libPoints']], color=plot_params['color1'], ls='', marker='^', mec='k', mfc='k', ms=5)
-        # self.ax_residuals_1.axhline(0, color=plot_params['color1'], linestyle='--', linewidth=1)
-        # self.ax_residuals_1.set_ylabel('$\u0394\u03C1$, {}'.format(plot_params['arcsec']), labelpad=plot_params['padding'])
+        self.ax_residuals_1.axhline(0, color=plot_params['color1'], linestyle='--', linewidth=1)
+        self.ax_residuals_1.set_ylabel('$\u0394\u03C1$, {}'.format(plot_params['arcsec']), labelpad=plot_params['padding'])
 
         self.ax_box_1.boxplot(residuals, boxprops={'color': plot_params['color1']}, medianprops={'color': plot_params['color1']}, whiskerprops={'linestyle': '-', 'color': plot_params['color1']})
-        # self.ax_box_1.get_xaxis().set_visible(False)
-        
         epoch_ticks = get_tick_positions_for_epochs(epochs)
         self.ax_residuals_1.xaxis.set_ticks(epoch_ticks)
 
@@ -540,10 +534,8 @@ class OrbitImage(QWidget):
         
             self.ax_residuals_2.xaxis.set_ticks(epoch_ticks)
             self.ax_residuals_2.set_xticklabels(['']*len(get_tick_positions_for_epochs(epoch_ticks)))
-            if plot_params['sub_1_lim_s'] > 0:
+            if plot_params['sub_1_brake_s'] > 0 and plot_params['sub_1_lim_s'] > 0:
                 pass
-                # ax7.yaxis.set_ticks(arange(plot_params['sub_1_lim_f'], plot_params['sub_1_lim_t']+1, plot_params['sub_1_lim_s']))
-                # ax7.set_ylim(plot_params['sub_1_lim_f'] - plot_params['sub_1_lim_s'], plot_params['sub_1_lim_t'] + plot_params['sub_1_lim_s'])
 
     def _plot_rhos_and_thetas(self, orbit_params, plot_params):
         pass

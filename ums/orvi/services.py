@@ -184,7 +184,7 @@ def get_tick_positions_for_epochs(data):
 
 def draw_brake_diagnoal_lines(axis, trans_axis, bottom, top, axis_type, trans_axis_side, p):
     d = 0.025
-    k = 4 * 0.9**(abs(5-p))
+    k = 3 * 0.9**(abs(5-p))
     sh = 1.75/7
     if trans_axis:
         kwargs = dict(transform=trans_axis.transAxes, color='k', clip_on=False)
@@ -203,11 +203,11 @@ def draw_brake_diagnoal_lines(axis, trans_axis, bottom, top, axis_type, trans_ax
                 if not bottom:
                     axis.plot((1-d, 1+d), (-d, +d), **kwargs)
                     axis.plot((1+sh-d, 1+sh+d), (-d, +d), **kwargs)
-            
         else:
             if not top:
-                axis.plot((-d, +d), (-d-k*d, +d-k*d), **kwargs)
-                axis.plot((1-d, 1+d), (1-d-k*d, 1+d-k*d), **kwargs)
+                axis.plot((-d, +d), (-d-k*d, d-k*d), **kwargs)
+                axis.plot((1-d, 1+d), (-d-k*d, d-k*d), **kwargs)
+                pass
             if not bottom:
                 axis.plot((-d, +d), (1-d+k*d, 1+d+k*d), **kwargs)
                 axis.plot((1-d, 1+d), (1-d+k*d, 1+d+k*d), **kwargs)

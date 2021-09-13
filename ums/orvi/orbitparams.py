@@ -203,7 +203,6 @@ class OrbitParams(QWidget):
                 badPoints.append(line_number)
             else:
                 libPoints.append(line_number)
-        print(badPoints)
         orbital_solution.set_parameters_with_errors(
             *map(float, o_P),
             *map(float, o_T0),

@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QLabel, QMessageBox
+from PySide2.QtWidgets import QLabel, QMessageBox, QSlider, QStyle
 from PySide2.QtCore import Qt
 
 
@@ -15,3 +15,10 @@ class ErrorMessage(QMessageBox):
         self.setText(error_message)
         self.setWindowTitle("Ошибка")
         self.exec_()
+
+class MySlider(QSlider):
+    def mousePressEvent(self, ev):
+        self.setValue(QStyle.sliderValueFromPosition(self.minimum(), self.maximum(), ev.x(), self.width()))
+
+    def mouseMoveEvent(self, ev):
+        self.setValue(QStyle.sliderValueFromPosition(self.minimum(), self.maximum(), ev.x(), self.width()))

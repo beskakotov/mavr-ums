@@ -2,7 +2,7 @@ from PySide2.QtWidgets import QComboBox, QWidget, QGridLayout, QLineEdit, QLabel
 from PySide2.QtGui import QPixmap, QImage, QIcon
 from PySide2.QtCore import Qt, QPoint
 
-from ums.common.widgets import QBorderedLabel, ErrorMessage
+from ums.common.widgets import QBorderedLabel, ErrorMessage, MySlider
 
 
 class PlotParams(QWidget):
@@ -35,14 +35,16 @@ class PlotParams(QWidget):
         self.b_SubMode.setCheckable(True)
         self.b_SubMode.clicked.connect(self.c_SubMode)
 
-        self.v_brake_1_rate = QSlider(Qt.Horizontal)
+        self.v_brake_1_rate = MySlider(Qt.Horizontal)
         self.v_brake_1_rate.setRange(1, 9)
         self.v_brake_1_rate.setValue(5)
         self.v_brake_1_rate.setTickPosition(QSlider.TicksAbove)
-        self.v_brake_2_rate = QSlider(Qt.Horizontal)
+        self.v_brake_1_rate.setTickInterval(1)
+        self.v_brake_2_rate = MySlider(Qt.Horizontal)
         self.v_brake_2_rate.setRange(1, 9)
         self.v_brake_2_rate.setValue(5)
         self.v_brake_2_rate.setTickPosition(QSlider.TicksAbove)
+        self.v_brake_2_rate.setTickInterval(1)
 
         self.b_OrbitOnly = QPushButton('Only orbit')
         self.b_OrbitOnly.setCheckable(True)
