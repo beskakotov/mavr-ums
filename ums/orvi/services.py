@@ -4,9 +4,6 @@ from numpy import (
     unique, linspace, floor, ceil
 )
 
-diagonal_size = 0.025
-
-
 class OrbitalSolution:
     def __init__(self):
         self.NAME = ''
@@ -185,7 +182,48 @@ def get_tick_positions_for_epochs(data):
                 break
     return epochs_ticks
 
-def create_axis(axis, plot_params, axis_type='orbit', bottom=True, top=True):
+def draw_brake_diagnoal_lines(axis, trans_axis, bottom, top, axis_type, trans_axis_side, p):
+    d = 0.025
+    k = 4 * 0.9**(abs(5-p))
+    sh = 1.75/7
+    if trans_axis:
+        kwargs = dict(transform=trans_axis.transAxes, color='k', clip_on=False)
+        if axis_type == 'box':
+            if trans_axis_side == 'bottom':
+                if not top:
+                    axis.plot((1-d, 1+d), (1-d, 1+d), **kwargs)
+                    axis.plot((1+sh-d, 1+sh+d), (1-d, 1+d), **kwargs)
+                if not bottom:
+                    axis.plot((1-d, 1+d), (1-d+k*d, 1+d+k*d), **kwargs)
+                    axis.plot((1+sh-d, 1+sh+d), (1-d+k*d, 1+d+k*d), **kwargs)
+            else:
+                if not top:
+                    axis.plot((1-d, 1+d), (-d-k*d, +d-k*d), **kwargs)
+                    axis.plot((1+sh-d, 1+sh+d), (-d-k*d, +d-k*d), **kwargs)
+                if not bottom:
+                    axis.plot((1-d, 1+d), (-d, +d), **kwargs)
+                    axis.plot((1+sh-d, 1+sh+d), (-d, +d), **kwargs)
+            
+        else:
+            if not top:
+                axis.plot((-d, +d), (-d-k*d, +d-k*d), **kwargs)
+                axis.plot((1-d, 1+d), (1-d-k*d, 1+d-k*d), **kwargs)
+            if not bottom:
+                axis.plot((-d, +d), (1-d+k*d, 1+d+k*d), **kwargs)
+                axis.plot((1-d, 1+d), (1-d+k*d, 1+d+k*d), **kwargs)
+
+    else:
+        kwargs = dict(transform=axis.transAxes, color='k', clip_on=False)
+        if not top:
+            axis.plot((-d, +d), (1-d, 1+d), **kwargs)
+            axis.plot((1-d, 1+d), (1-d, 1+d), **kwargs)
+        if not bottom:
+            axis.plot((-d, +d), (-d, +d), **kwargs)
+            axis.plot((1-d, 1+d), (-d, +d), **kwargs)
+    
+    return axis
+
+def create_axis(axis, plot_params, axis_type='orbit', bottom=True, top=True, trans_axis=None, trans_axis_side='bottom'):
     axis.tick_params(direction='in')
     axis.xaxis.set_ticks_position('both')
     if axis_type == 'orbit':
@@ -195,35 +233,21 @@ def create_axis(axis, plot_params, axis_type='orbit', bottom=True, top=True):
             axis.tick_params(labelbottom='off')
             axis.spines['bottom'].set_visible(False)
             axis.xaxis.set_ticks_position('top')
-            kwargs = dict(transform=axis.transAxes, color='k', clip_on=False)
-            axis.plot((-diagonal_size, +diagonal_size), (-diagonal_size, +diagonal_size), **kwargs)
-            axis.plot((1 - diagonal_size, 1 + diagonal_size), (-diagonal_size, +diagonal_size), **kwargs)
         elif not top:
             axis.tick_params(labeltop='off')
             axis.spines['top'].set_visible(False)
             axis.xaxis.set_ticks_position('bottom')
-            kwargs = dict(transform=axis.transAxes, color='k', clip_on=False)
-            axis.plot((-diagonal_size, +diagonal_size), (1 - diagonal_size, 1 + diagonal_size), **kwargs)
-            axis.plot((1 - diagonal_size, 1 + diagonal_size), (1 - diagonal_size, 1 + diagonal_size), **kwargs)
-        else:
-            pass
     elif axis_type == 'box':
         axis.get_xaxis().set_visible(False)
-        k = 4
         if not bottom:
             axis.tick_params(labelbottom='off')
             axis.spines['bottom'].set_visible(False)
             axis.xaxis.set_ticks_position('top')
-            kwargs = dict(transform=axis.transAxes, color='k', clip_on=False)
-            axis.plot((-diagonal_size*k, +diagonal_size*k), (-diagonal_size*k, +diagonal_size*k), **kwargs)
-            axis.plot((1 - diagonal_size*k, 1 + diagonal_size*k), (-diagonal_size*k, +diagonal_size*k), **kwargs)
         elif not top:
             axis.tick_params(labeltop='off')
             axis.spines['top'].set_visible(False)
             axis.xaxis.set_ticks_position('bottom')
-            kwargs = dict(transform=axis.transAxes, color='k', clip_on=False)
-            axis.plot((-diagonal_size*k, +diagonal_size*k), (1 - diagonal_size*k, 1 + diagonal_size*k), **kwargs)
-            axis.plot((1 - diagonal_size*k, 1 + diagonal_size*k), (1 - diagonal_size*k, 1 + diagonal_size*k), **kwargs)
     else:
         raise ValueError(f'Unknown type of axis: {axis_type}')
+    axis = draw_brake_diagnoal_lines(axis, trans_axis, bottom, top, axis_type, trans_axis_side, plot_params['sub_1_brake_rate'])
     return axis

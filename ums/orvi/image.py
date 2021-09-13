@@ -82,8 +82,10 @@ class OrbitImage(QWidget):
 
     def _setup_plot_residuals(self, plot_params):
         self.setFixedSize(600, 600 + 25 + 60 + 60)
+        # plot_params['sub_1_brake_rate']
+        # plot_params['sub_2_brake_rate']
         gridspec = self.fig.add_gridspec(5, 2,
-            width_ratios=(8, 2), height_ratios=(600, 25, 60, 5, 60),
+            width_ratios=(8, 2), height_ratios=(600, 25, int(120 * plot_params['sub_1_brake_rate'] / 10), 5, int(120 * (10 - plot_params['sub_1_brake_rate']) / 10)),
             left=0.1, right=0.95, bottom=0.05, top=0.95,
             wspace=0, hspace=0)
 
@@ -92,30 +94,66 @@ class OrbitImage(QWidget):
             plot_params
         )
         if plot_params['Brake_1']:
-            self.ax_residuals_2 = create_axis(
-                self.fig.add_subplot(gridspec[2, 0]),
-                plot_params,
-                axis_type='residuals',
-                bottom=False,
-            )
-            self.ax_residuals_1 = create_axis(
-                self.fig.add_subplot(gridspec[4, 0]),
-                plot_params,
-                axis_type='residuals',
-                top=False,
-            )
-            self.ax_box_2 = create_axis(
-                self.fig.add_subplot(gridspec[2, 1]),
-                plot_params,
-                axis_type='box',
-                bottom=False
-            )
-            self.ax_box_1 = create_axis(
-                self.fig.add_subplot(gridspec[4, 1]),
-                plot_params,
-                axis_type='box',
-                top=False,
-            )
+            if plot_params['sub_1_brake_rate'] <= 5:
+                self.ax_residuals_1 = create_axis(
+                    self.fig.add_subplot(gridspec[4, 0]),
+                    plot_params,
+                    axis_type='residuals',
+                    top=False,
+                )
+                self.ax_residuals_2 = create_axis(
+                    self.fig.add_subplot(gridspec[2, 0]),
+                    plot_params,
+                    axis_type='residuals',
+                    bottom=False,
+                    trans_axis=self.ax_residuals_1,
+                )
+                self.ax_box_2 = create_axis(
+                    self.fig.add_subplot(gridspec[2, 1]),
+                    plot_params,
+                    axis_type='box',
+                    bottom=False,
+                    trans_axis=self.ax_residuals_1,
+                    trans_axis_side='bottom',
+                )
+                self.ax_box_1 = create_axis(
+                    self.fig.add_subplot(gridspec[4, 1]),
+                    plot_params,
+                    axis_type='box',
+                    top=False,
+                    trans_axis=self.ax_residuals_1,
+                    trans_axis_side='bottom',
+                )
+            else:
+                self.ax_residuals_2 = create_axis(
+                    self.fig.add_subplot(gridspec[2, 0]),
+                    plot_params,
+                    axis_type='residuals',
+                    bottom=False,
+                )
+                self.ax_residuals_1 = create_axis(
+                    self.fig.add_subplot(gridspec[4, 0]),
+                    plot_params,
+                    axis_type='residuals',
+                    top=False,
+                    trans_axis=self.ax_residuals_2,
+                )
+                self.ax_box_2 = create_axis(
+                    self.fig.add_subplot(gridspec[2, 1]),
+                    plot_params,
+                    axis_type='box',
+                    bottom=False,
+                    trans_axis=self.ax_residuals_2,
+                    trans_axis_side='top',
+                )
+                self.ax_box_1 = create_axis(
+                    self.fig.add_subplot(gridspec[4, 1]),
+                    plot_params,
+                    axis_type='box',
+                    top=False,
+                    trans_axis=self.ax_residuals_2,
+                    trans_axis_side='top',
+                )
         else:
             self.ax_residuals_1 = create_axis(
                 self.fig.add_subplot(gridspec[2:, 0]),

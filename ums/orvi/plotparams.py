@@ -36,12 +36,12 @@ class PlotParams(QWidget):
         self.b_SubMode.clicked.connect(self.c_SubMode)
 
         self.v_brake_1_rate = QSlider(Qt.Horizontal)
-        self.v_brake_1_rate.setRange(0, 8)
-        self.v_brake_1_rate.setValue(4)
+        self.v_brake_1_rate.setRange(1, 9)
+        self.v_brake_1_rate.setValue(5)
         self.v_brake_1_rate.setTickPosition(QSlider.TicksAbove)
         self.v_brake_2_rate = QSlider(Qt.Horizontal)
-        self.v_brake_2_rate.setRange(0, 8)
-        self.v_brake_2_rate.setValue(4)
+        self.v_brake_2_rate.setRange(1, 9)
+        self.v_brake_2_rate.setValue(5)
         self.v_brake_2_rate.setTickPosition(QSlider.TicksAbove)
 
         self.b_OrbitOnly = QPushButton('Only orbit')
@@ -376,6 +376,9 @@ class PlotParams(QWidget):
             'sub_2_brake_f' :   self.v_sub_2_brake_f.value(),
             'sub_2_brake_t' :   self.v_sub_2_brake_t.value(),
             'sub_2_brake_s' :   self.v_sub_2_brake_s.value(),
+
+            'sub_1_brake_rate' :   self.v_brake_1_rate.value(),
+            'sub_2_brake_rate' :   self.v_brake_2_rate.value(),
 
             'north_x'       :   self.v_north_x.value(),
             'north_y'       :   self.v_north_y.value(),
