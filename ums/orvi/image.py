@@ -436,17 +436,17 @@ class OrbitImage(QWidget):
                            linewidth=1.2)
 
     def _plot_literature_orbit(self, orbit_params, plot_params):
-        self.ax_orbit.plot(-orbit_params['lit_model'][:, 1],
-                           orbit_params['lit_model'][:, 0],
+        self.ax_orbit.plot(-orbit_params['literature_model'][:, 1],
+                           orbit_params['literature_model'][:, 0],
                            color=plot_params['color2'],
                            ls='-', linewidth=0.5)
-        for i in range(len(orbit_params['lit_x'])):
-            self.ax_orbit.plot([orbit_params['lit_x'][i], -orbit_params['lit_bind'][i, 1]],
-                               [orbit_params['lit_y'][i], orbit_params['lit_bind'][i, 0]],
+        for i in range(len(orbit_params['literature_x'])):
+            self.ax_orbit.plot([orbit_params['literature_x'][i], -orbit_params['literature_bind'][i, 1]],
+                               [orbit_params['literature_y'][i], orbit_params['literature_bind'][i, 0]],
                                color=plot_params['color2'],
                                linestyle='--', linewidth=0.5)
-        self.ax_orbit.plot([0, -orbit_params['lit_model'][0, 1]],
-                           [0, orbit_params['lit_model'][0, 0]],
+        self.ax_orbit.plot([0, -orbit_params['literature_model'][0, 1]],
+                           [0, orbit_params['literature_model'][0, 0]],
                            color=plot_params['color2'],
                            linestyle='-', linewidth=0.5)
 
@@ -454,32 +454,25 @@ class OrbitImage(QWidget):
         text_params = dict(
             porb_t='$P_{orb}$',
             T0_t='$T_{0}$',
-            obj_name=orbit_params['name'],
-            p_orb='{}$ \pm ${}'.format(*orbit_params['P'].split('|')) if len(orbit_params['P'].split('|')) == 2 else
-            orbit_params['P'],
+            obj_name=orbit_params['orbital_solution'].NAME,
+            p_orb = f"{orbit_params['orbital_solution'].P}$ \pm ${orbit_params['orbital_solution'].P_err}" if orbit_params['orbital_solution'].P_err != 0 else orbit_params['orbital_solution'].P,
+            T_0 = f"{orbit_params['orbital_solution'].T0}$ \pm ${orbit_params['orbital_solution'].T0_err}" if orbit_params['orbital_solution'].T0_err != 0 else orbit_params['orbital_solution'].T0,
+            e = f"{orbit_params['orbital_solution'].e}$ \pm ${orbit_params['orbital_solution'].e_err}" if orbit_params['orbital_solution'].e_err != 0 else orbit_params['orbital_solution'].e,
+            a = f"{orbit_params['orbital_solution'].a}$ \pm ${orbit_params['orbital_solution'].a_err}" if orbit_params['orbital_solution'].a_err != 0 else orbit_params['orbital_solution'].a,
+            W = f"{orbit_params['orbital_solution'].W}$ \pm ${orbit_params['orbital_solution'].W_err}" if orbit_params['orbital_solution'].W_err != 0 else orbit_params['orbital_solution'].W,
+            w = f"{orbit_params['orbital_solution'].w}$ \pm ${orbit_params['orbital_solution'].w_err}" if orbit_params['orbital_solution'].w_err != 0 else orbit_params['orbital_solution'].w,
+            i = f"{orbit_params['orbital_solution'].i}$ \pm ${orbit_params['orbital_solution'].i_err}" if orbit_params['orbital_solution'].i_err != 0 else orbit_params['orbital_solution'].i,
             y=plot_params['year'],
-            T_0='{}$ \pm ${}'.format(*orbit_params['T0'].split('|')) if len(orbit_params['T0'].split('|')) == 2 else
-            orbit_params['T0'],
-            e='{}$ \pm ${}'.format(*orbit_params['e'].split('|')) if len(orbit_params['e'].split('|')) == 2 else
-            orbit_params['e'],
-            a='{}$ \pm ${}'.format(*orbit_params['a'].split('|')) if len(orbit_params['a'].split('|')) == 2 else
-            orbit_params['a'],
             arcsec=plot_params['arcsec'],
-            W='{}$ \pm ${}'.format(*orbit_params['W'].split('|')) if len(orbit_params['W'].split('|')) == 2 else
-            orbit_params['W'],
-            w='{}$ \pm ${}'.format(*orbit_params['w'].split('|')) if len(orbit_params['w'].split('|')) == 2 else
-            orbit_params['w'],
-            i='{}$ \pm ${}'.format(*orbit_params['i'].split('|')) if len(orbit_params['i'].split('|')) == 2 else
-            orbit_params['i']
         )
-        textstr = ('     {obj_name}\n\
-                {porb_t} = {p_orb} {y}\n\
-                {T0_t}  = {T_0} {y}\n\
-                $e$   = {e}\n\
-                $a$   = {a} {arcsec}\n\
-                $\Omega$   = {W}\u00B0\n\
-                $\omega$   = {w}\u00B0\n\
-                $i$    = {i}\u00B0'.format(**text_params))
+        textstr = '     {obj_name}\n\
+{porb_t} = {p_orb} {y}\n\
+{T0_t}  = {T_0} {y}\n\
+$e$   = {e}\n\
+$a$   = {a} {arcsec}\n\
+$\Omega$   = {W}\u00B0\n\
+$\omega$   = {w}\u00B0\n\
+$i$    = {i}\u00B0'.format(**text_params)
         props = dict(boxstyle='round', facecolor='white', alpha=0.2)
         self.ax_orbit.text(plot_params['box_x'], plot_params['box_y'], textstr, fontsize=10, fontname='monospace',
                            style='normal', va='top', ha='left', bbox=props)
@@ -511,31 +504,47 @@ class OrbitImage(QWidget):
     def _plot_residuals(self, orbit_params, plot_params):
         residuals = calculate_residuals(orbit_params)
         epochs = fromiter((point.epoch for point in orbit_params['position_list']), float)
+        
+        self.ax_residuals_1.set_ylabel('$\u0394$, {}'.format(plot_params['arcsec'], labelpad=plot_params['padding']))  # Delta
+
         self.ax_residuals_1.plot(epochs[0], residuals[0], color=plot_params['color1'], ls='', marker='o', mec='k', mfc='w', ms=10)
         self.ax_residuals_1.plot(epochs[orbit_params['newPoints']], residuals[orbit_params['newPoints']], color=plot_params['color1'], ls='', marker='o', mec='k', mfc='w', ms=5)
         self.ax_residuals_1.plot(epochs[orbit_params['badPoints']], residuals[orbit_params['badPoints']], color=plot_params['color1'], ls='', marker='x', mec='k', mfc='k', ms=5)
         self.ax_residuals_1.plot(epochs[orbit_params['libPoints']], residuals[orbit_params['libPoints']], color=plot_params['color1'], ls='', marker='^', mec='k', mfc='k', ms=5)
-        self.ax_residuals_1.axhline(0, color=plot_params['color1'], linestyle='--', linewidth=1)
-        self.ax_residuals_1.set_ylabel('$\u0394\u03C1$, {}'.format(plot_params['arcsec']), labelpad=plot_params['padding'])
 
-        self.ax_box_1.boxplot(residuals, boxprops={'color': plot_params['color1']}, medianprops={'color': plot_params['color1']}, whiskerprops={'linestyle': '-', 'color': plot_params['color1']})
+        self.ax_residuals_1.axhline(0, color=plot_params['color1'], linestyle='--', linewidth=1)
+        self.ax_residuals_1.set_xlabel(plot_params['epoch'])
         epoch_ticks = get_tick_positions_for_epochs(epochs)
         self.ax_residuals_1.xaxis.set_ticks(epoch_ticks)
+
+        self.ax_box_1.boxplot(residuals, boxprops={'color': plot_params['color1']}, medianprops={'color': plot_params['color1']}, whiskerprops={'linestyle': '-', 'color': plot_params['color1']})
 
         if plot_params['sub_1_lim_s'] > 0:
             self.ax_residuals_1.yaxis.set_ticks(arange(plot_params['sub_1_lim_f'], plot_params['sub_1_lim_t']+1, plot_params['sub_1_lim_s']))
             self.ax_residuals_1.set_ylim(plot_params['sub_1_lim_f'] - plot_params['sub_1_lim_s'], plot_params['sub_1_lim_t'] + plot_params['sub_1_lim_s'])
+            self.ax_box_1.yaxis.set_ticks(arange(plot_params['sub_1_lim_f'], plot_params['sub_1_lim_t']+1, plot_params['sub_1_lim_s']))
+            self.ax_box_1.set_ylim(plot_params['sub_1_lim_f'] - plot_params['sub_1_lim_s'], plot_params['sub_1_lim_t'] + plot_params['sub_1_lim_s'])
 
         if plot_params['Brake_1']:
             self.ax_residuals_2.plot(epochs[0], residuals[0], color=plot_params['color1'], ls='', marker='o', mec='k', mfc='w', ms=10)
             self.ax_residuals_2.plot(epochs[orbit_params['newPoints']], residuals[orbit_params['newPoints']], color=plot_params['color1'], ls='', marker='o', mec='k', mfc='w', ms=5)
             self.ax_residuals_2.plot(epochs[orbit_params['badPoints']], residuals[orbit_params['badPoints']], color=plot_params['color1'], ls='', marker='x', mec='k', mfc='k', ms=5)
             self.ax_residuals_2.plot(epochs[orbit_params['libPoints']], residuals[orbit_params['libPoints']], color=plot_params['color1'], ls='', marker='^', mec='k', mfc='k', ms=5)
-        
+            self.ax_residuals_2.axhline(0, color=plot_params['color1'], linestyle='--', linewidth=1)
             self.ax_residuals_2.xaxis.set_ticks(epoch_ticks)
-            self.ax_residuals_2.set_xticklabels(['']*len(get_tick_positions_for_epochs(epoch_ticks)))
+            self.ax_residuals_2.set_xticklabels(['']*len(epoch_ticks))
+            self.ax_box_2.boxplot(residuals, boxprops={'color': plot_params['color1']}, medianprops={'color': plot_params['color1']}, whiskerprops={'linestyle': '-', 'color': plot_params['color1']})
+            self.ax_box_2.get_xaxis().set_visible(False)
+            self.ax_residuals_1.set_ylabel('$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \u0394$, {}'.format(plot_params['arcsec']), labelpad=plot_params['padding'])  # Delta
             if plot_params['sub_1_brake_s'] > 0 and plot_params['sub_1_lim_s'] > 0:
-                pass
+                self.ax_residuals_2.yaxis.set_ticks(arange(plot_params['sub_1_brake_t'], plot_params['sub_1_lim_t']+1, plot_params['sub_1_brake_s']))
+                self.ax_residuals_2.set_ylim(plot_params['sub_1_brake_t'] - plot_params['sub_1_brake_s']/2, plot_params['sub_1_lim_t'] + plot_params['sub_1_brake_s']/2)
+                self.ax_residuals_1.yaxis.set_ticks(arange(plot_params['sub_1_lim_f'], plot_params['sub_1_brake_f']+1, plot_params['sub_1_lim_s']))
+                self.ax_residuals_1.set_ylim(plot_params['sub_1_lim_f'] - plot_params['sub_1_lim_s']/2, plot_params['sub_1_brake_f'] + plot_params['sub_1_lim_s']/2)
+                self.ax_box_2.yaxis.set_ticks(arange(plot_params['sub_1_brake_t'], plot_params['sub_1_lim_t']+1, plot_params['sub_1_brake_s']))
+                self.ax_box_2.set_ylim(plot_params['sub_1_brake_t'] - plot_params['sub_1_brake_s']/2, plot_params['sub_1_lim_t'] + plot_params['sub_1_brake_s']/2)
+                self.ax_box_1.yaxis.set_ticks(arange(plot_params['sub_1_lim_f'], plot_params['sub_1_brake_f']+1, plot_params['sub_1_lim_s']))
+                self.ax_box_1.set_ylim(plot_params['sub_1_lim_f'] - plot_params['sub_1_lim_s']/2, plot_params['sub_1_brake_f'] + plot_params['sub_1_lim_s']/2)
 
     def _plot_rhos_and_thetas(self, orbit_params, plot_params):
         pass

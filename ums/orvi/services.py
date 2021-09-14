@@ -3,6 +3,7 @@ from numpy import (
     arctan, pi, arange, fromiter, array,
     unique, linspace, floor, ceil
 )
+from matplotlib import ticker
 
 class OrbitalSolution:
     def __init__(self):
@@ -20,7 +21,7 @@ class OrbitalSolution:
         self.w = 0
         self.w_err = 0
         self.W = 0
-        self.w_err = 0
+        self.W_err = 0
         self.i = 0
         self.i_err = 0
 
@@ -49,8 +50,20 @@ class OrbitalSolution:
         self.a = a
         self.e = e
         self.W = W
+        self.W_rad = deg2rad(W)
         self.w = w
+        self.w_rad = deg2rad(w)
         self.i = i
+        self.i_rad = deg2rad(i)
+    
+    def set_errors(self, P_e, T0_e, a_e, e_e, W_e, w_e, i_e):
+        self.P_err = P_e
+        self.T0_err = T0_e
+        self.a_err = a_e
+        self.e_err = e_e
+        self.W_err = W_e
+        self.w_err = w_e
+        self.i_err = i_e
 
     def set_info(self, parameter, value):
         if parameter == 'name':
@@ -145,9 +158,9 @@ def find_ext(data, t):
 def get_orbit(points, orb_sol):
     num_of_points = 500
 
-    epochs = fromiter((point.epoch for point in points), dtype='float32')
-    rhos = fromiter((point.rho for point in points), dtype='float32')
-    thetas = fromiter((deg2rad(point.theta) for point in points), dtype='float32')
+    epochs = fromiter((point.epoch for point in points), float)
+    rhos = fromiter((point.rho for point in points), float)
+    thetas = fromiter((deg2rad(point.theta) for point in points), float)
 
     mod_epochs = arange(num_of_points) / (num_of_points - 1) * orb_sol.P + orb_sol.T0
     xye = ephemeris(orb_sol, mod_epochs)
@@ -229,6 +242,7 @@ def create_axis(axis, plot_params, axis_type='orbit', bottom=True, top=True, tra
     if axis_type == 'orbit':
         axis.axis('equal')
     elif axis_type in ['residuals', 'errors']:
+        axis.yaxis.set_ticks_position('both')
         if not bottom:
             axis.tick_params(labelbottom='off')
             axis.spines['bottom'].set_visible(False)
@@ -239,6 +253,9 @@ def create_axis(axis, plot_params, axis_type='orbit', bottom=True, top=True, tra
             axis.xaxis.set_ticks_position('bottom')
     elif axis_type == 'box':
         axis.get_xaxis().set_visible(False)
+        axis.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: ''))
+        axis.yaxis.set_ticks_position('both')
+
         if not bottom:
             axis.tick_params(labelbottom='off')
             axis.spines['bottom'].set_visible(False)

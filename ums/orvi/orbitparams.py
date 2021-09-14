@@ -3,6 +3,8 @@ from PySide2.QtWidgets import QGraphicsItem, QWidget, QGridLayout, QLineEdit, QL
 from PySide2.QtGui import QPixmap, QImage, QIcon
 from PySide2.QtCore import Qt, QPoint
 
+from numpy import fromiter
+
 from ums.orvi.services import get_orbit, get_points, OrbitalSolution
 from ums.common.functions import is_numeric
 
@@ -189,6 +191,14 @@ class OrbitParams(QWidget):
             o_w[0] = float(self.v_w.text().split('|')[0])
             o_i[0] = float(self.v_i.text().split('|')[0])
 
+            o_P[1] = float(self.v_P.text().split('|')[1])
+            o_T0[1] = float(self.v_T0.text().split('|')[1])
+            o_e[1] = float(self.v_e.text().split('|')[1])
+            o_a[1] = float(self.v_a.text().split('|')[1])
+            o_W[1] = float(self.v_W.text().split('|')[1])
+            o_w[1] = float(self.v_w.text().split('|')[1])
+            o_i[1] = float(self.v_i.text().split('|')[1])
+        
         libPoints = []
         newPoints = []
         badPoints = []
@@ -223,14 +233,14 @@ class OrbitParams(QWidget):
             self.lit_v_i.text()
         )
 
-        if all(all_lit_orbit_params) and all(*map(is_numeric, all_lit_orbit_params)):
+        if all(all_lit_orbit_params) and all(fromiter(map(is_numeric, all_lit_orbit_params), bool)):
             literature_orbital_solution = OrbitalSolution()
             literature_orbital_solution.set_parameters(
                 *map(float, (
                     self.lit_v_P.text(),
                     self.lit_v_T0.text(),
-                    self.lit_v_e.text(),
                     self.lit_v_a.text(),
+                    self.lit_v_e.text(),
                     self.lit_v_W.text(),
                     self.lit_v_w.text(),
                     self.lit_v_i.text()
@@ -242,8 +252,7 @@ class OrbitParams(QWidget):
 
         if literature_orbital_solution:
             literature_position_list = get_points(i_path, literature_orbital_solution)
-            literature_model, literature_bind, literature_x, literature_y = get_orbit(literature_position_list,
-                                                                                      literature_orbital_solution)
+            literature_model, literature_bind, literature_x, literature_y = get_orbit(literature_position_list, literature_orbital_solution)
 
         orbit_params = {
             'orbital_solution': orbital_solution,

@@ -14,8 +14,8 @@ class OrVI_GUI(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle('(Or)bits (V)isualisation (I)nterface) || UMS v{}.{}'.format(__mainversion__, __subversion__))
-        # self.setFixedSize(800, 700)
-        self.setFixedSize(0, 0)
+        self.setFixedSize(800, 0)
+        # self.setFixedSize(0, 0)
         self.last_path = '.'
 
         self.__init_interface()
