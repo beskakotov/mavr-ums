@@ -1,7 +1,8 @@
 from numpy import (
     sqrt, cos, sin, deg2rad, tan,
     arctan, pi, arange, fromiter, array,
-    unique, linspace, floor, ceil
+    unique, linspace, floor, ceil, arctan2,
+    rad2deg,
 )
 from matplotlib import ticker
 
@@ -72,7 +73,6 @@ class OrbitalSolution:
             self.RA = value
         elif parameter == 'DEC':
             self.DEC = value
-
 
 class Point:
     def __init__(self, epoch, theta, rho, weight, koeff):
@@ -181,6 +181,18 @@ def calculate_residuals(orbit_params):
         float
     )
 
+def calculate_drho_and_dtheta(orbit_params):
+    drho = []
+    dtheta = []
+    for X, Y, X_bind, Y_bind in zip(orbit_params['x'], orbit_params['y'], -orbit_params['bind'][:, 1], orbit_params['bind'][:, 0]):
+        rho = get_rho(X, Y)
+        theta = get_theta(X, Y)
+        rho_bind = get_rho(X_bind, Y_bind)
+        theta_bind = get_theta(X_bind, Y_bind)
+        drho.append(rho - rho_bind)
+        dtheta.append(rad2deg(theta - theta_bind))
+    return array(drho), array(dtheta)
+
 def get_tick_positions_for_epochs(data):
     if data.max() - data.min() > 2:
         epochs_ticks = unique(linspace(floor(data.min()), ceil(data.max()), 6, dtype='uint16'))
@@ -268,3 +280,12 @@ def create_axis(axis, plot_params, axis_type='orbit', bottom=True, top=True, tra
         raise ValueError(f'Unknown type of axis: {axis_type}')
     axis = draw_brake_diagnoal_lines(axis, trans_axis, bottom, top, axis_type, trans_axis_side, plot_params['sub_1_brake_rate'])
     return axis
+
+def get_rho(x, y):
+    return sqrt(x**2 + y**2)
+
+def get_theta(x, y):
+    theta = arctan2(y, x) % (2 * pi)
+    if theta < 0:
+        theta += 2 * pi
+    return theta

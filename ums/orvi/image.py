@@ -2,9 +2,9 @@ from PySide2.QtCore import Qt, QPoint
 from PySide2.QtWidgets import QWidget, QGridLayout
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from numpy import fromiter, arange
+from numpy import fromiter, arange, rad2deg
 
-from ums.orvi.services import create_axis, calculate_residuals, get_tick_positions_for_epochs
+from ums.orvi.services import create_axis, calculate_residuals, get_tick_positions_for_epochs, calculate_drho_and_dtheta
 
 
 class OrbitImage(QWidget):
@@ -36,6 +36,7 @@ class OrbitImage(QWidget):
         else:
             if plot_params['SubMode'] == 'errors' or plot_params['SubMode'] == True:
                 self._setup_plot_rhos_and_thetas(plot_params)
+                self._plot_rhos_and_thetas(orbit_params, plot_params)
 
             elif plot_params['SubMode'] == 'residuals' or plot_params['SubMode'] == False:
                 self._setup_plot_residuals(plot_params)
@@ -167,9 +168,13 @@ class OrbitImage(QWidget):
     def _setup_plot_rhos_and_thetas(self, plot_params):
         self.setFixedSize(600, 600 + 25 + 60 + 60 + 60 + 60)
         gridspec = self.fig.add_gridspec(8, 2,
-                                         width_ratios=(8, 2), height_ratios=(600, 25, 60, 5, 60, 60, 5, 60),
-                                         left=0.1, right=0.95, bottom=0.05, top=0.95,
-                                         wspace=0.2, hspace=0)
+            width_ratios=(8, 2), height_ratios=(
+                600, 25,
+                int(120 * plot_params['sub_1_brake_rate'] / 10), 5, int(120 * (10 - plot_params['sub_1_brake_rate']) / 10),
+                int(120 * plot_params['sub_2_brake_rate'] / 10), 5, int(120 * (10 - plot_params['sub_2_brake_rate']) / 10),
+                ),
+            left=0.1, right=0.95, bottom=0.05, top=0.95,
+            wspace=0, hspace=0)
 
         self.ax_orbit = create_axis(
             self.fig.add_subplot(gridspec[0, :]),
@@ -177,57 +182,150 @@ class OrbitImage(QWidget):
         )
 
         if plot_params['Brake_1']:
-            self.ax_rho_1 = create_axis(
-                self.fig.add_subplot(gridspec[2, 0]),
-                plot_params,
-                axis_type='errors',
-                bottom=False,
-            )
-            self.ax_rho_2 = create_axis(
-                self.fig.add_subplot(gridspec[4, 0]),
-                plot_params,
-                axis_type='errors',
-                top=False,
-            )
+            if plot_params['sub_1_brake_rate'] <= 5:
+                self.ax_rho_1 = create_axis(
+                    self.fig.add_subplot(gridspec[4, 0]),
+                    plot_params,
+                    axis_type='errors',
+                    top=False,
+                )
+                self.ax_rho_2 = create_axis(
+                    self.fig.add_subplot(gridspec[2, 0]),
+                    plot_params,
+                    axis_type='errors',
+                    bottom=False,
+                    trans_axis=self.ax_rho_1,
+                )
+                self.ax_box_rho_1 = create_axis(
+                    self.fig.add_subplot(gridspec[4, 1]),
+                    plot_params,
+                    axis_type='box',
+                    top=False,
+                    trans_axis=self.ax_rho_1,
+                    trans_axis_side='bottom',
+                )
+                self.ax_box_rho_2 = create_axis(
+                    self.fig.add_subplot(gridspec[2, 1]),
+                    plot_params,
+                    axis_type='box',
+                    bottom=False,
+                    trans_axis=self.ax_rho_1,
+                    trans_axis_side='bottom',
+                )
+            else:
+                self.ax_rho_2 = create_axis(
+                    self.fig.add_subplot(gridspec[2, 0]),
+                    plot_params,
+                    axis_type='errors',
+                    bottom=False,
+                )
+                self.ax_rho_1 = create_axis(
+                    self.fig.add_subplot(gridspec[4, 0]),
+                    plot_params,
+                    axis_type='errors',
+                    top=False,
+                    trans_axis=self.ax_rho_2,
+                )
+                self.ax_box_rho_2 = create_axis(
+                    self.fig.add_subplot(gridspec[2, 1]),
+                    plot_params,
+                    axis_type='box',
+                    bottom=False,
+                    trans_axis=self.ax_rho_2,
+                    trans_axis_side='top',
+                )
+                self.ax_box_rho_1 = create_axis(
+                    self.fig.add_subplot(gridspec[4, 1]),
+                    plot_params,
+                    axis_type='box',
+                    top=False,
+                    trans_axis=self.ax_rho_2,
+                    trans_axis_side='top',
+                )
         else:
             self.ax_rho_1 = create_axis(
                 self.fig.add_subplot(gridspec[2:5, 0]),
                 plot_params,
                 axis_type='errors'
             )
-
+            self.ax_box_rho_1 = create_axis(
+                self.fig.add_subplot(gridspec[2:5, 1]),
+                plot_params,
+                axis_type='box'
+            )
+        
         if plot_params['Brake_2']:
-            self.ax_theta_1 = create_axis(
-                self.fig.add_subplot(gridspec[5, 0]),
-                plot_params,
-                axis_type='errors',
-                bottom=False,
-            )
-            self.ax_theta_2 = create_axis(
-                self.fig.add_subplot(gridspec[7, 0]),
-                plot_params,
-                axis_type='errors',
-                top=False,
-            )
+            if plot_params['sub_2_brake_rate'] <= 5:
+                self.ax_theta_1 = create_axis(
+                    self.fig.add_subplot(gridspec[7, 0]),
+                    plot_params,
+                    axis_type='errors',
+                    top=False,
+                )
+                self.ax_theta_2 = create_axis(
+                    self.fig.add_subplot(gridspec[5, 0]),
+                    plot_params,
+                    axis_type='errors',
+                    bottom=False,
+                    trans_axis=self.ax_theta_1,
+                )
+                self.ax_box_theta_1 = create_axis(
+                    self.fig.add_subplot(gridspec[7, 1]),
+                    plot_params,
+                    axis_type='box',
+                    top=False,
+                    trans_axis=self.ax_theta_1,
+                    trans_axis_side='bottom',
+                )
+                self.ax_box_theta_2 = create_axis(
+                    self.fig.add_subplot(gridspec[5, 1]),
+                    plot_params,
+                    axis_type='box',
+                    bottom=False,
+                    trans_axis=self.ax_theta_1,
+                    trans_axis_side='bottom',
+                )
+            else:
+                self.ax_theta_2 = create_axis(
+                    self.fig.add_subplot(gridspec[5, 0]),
+                    plot_params,
+                    axis_type='errors',
+                    bottom=False,
+                )
+                self.ax_theta_1 = create_axis(
+                    self.fig.add_subplot(gridspec[7, 0]),
+                    plot_params,
+                    axis_type='errors',
+                    top=False,
+                    trans_axis=self.ax_theta_2,
+                )
+                self.ax_box_theta_2 = create_axis(
+                    self.fig.add_subplot(gridspec[5, 1]),
+                    plot_params,
+                    axis_type='box',
+                    bottom=False,
+                    trans_axis=self.ax_theta_2,
+                    trans_axis_side='top',
+                )
+                self.ax_box_theta_1 = create_axis(
+                    self.fig.add_subplot(gridspec[7, 1]),
+                    plot_params,
+                    axis_type='box',
+                    top=False,
+                    trans_axis=self.ax_theta_2,
+                    trans_axis_side='top',
+                )
         else:
             self.ax_theta_1 = create_axis(
                 self.fig.add_subplot(gridspec[5:, 0]),
                 plot_params,
                 axis_type='errors'
             )
-
-        self.ax_box_1 = create_axis(
-            self.fig.add_subplot(gridspec[2:5, 1]),
-            plot_params,
-            axis_type='box'
-        )
-
-        self.ax_box_2 = create_axis(
-            self.fig.add_subplot(gridspec[5:, 1]),
-            plot_params,
-            axis_type='box'
-        )
-
+            self.ax_box_theta_1 = create_axis(
+                self.fig.add_subplot(gridspec[5:, 1]),
+                plot_params,
+                axis_type='box'
+            )
 
         return
 
@@ -465,14 +563,14 @@ class OrbitImage(QWidget):
             y=plot_params['year'],
             arcsec=plot_params['arcsec'],
         )
-        textstr = '     {obj_name}\n\
-{porb_t} = {p_orb} {y}\n\
-{T0_t}  = {T_0} {y}\n\
-$e$   = {e}\n\
-$a$   = {a} {arcsec}\n\
-$\Omega$   = {W}\u00B0\n\
-$\omega$   = {w}\u00B0\n\
-$i$    = {i}\u00B0'.format(**text_params)
+        textstr = ('     {obj_name}\n'\
+                    '{porb_t} = {p_orb} {y}\n'\
+                    '{T0_t}  = {T_0} {y}\n'\
+                    '$e$   = {e}\n'\
+                    '$a$   = {a} {arcsec}\n'\
+                    '$\Omega$   = {W}\u00B0\n'\
+                    '$\omega$   = {w}\u00B0\n'\
+                    '$i$    = {i}\u00B0').format(**text_params)
         props = dict(boxstyle='round', facecolor='white', alpha=0.2)
         self.ax_orbit.text(plot_params['box_x'], plot_params['box_y'], textstr, fontsize=10, fontname='monospace',
                            style='normal', va='top', ha='left', bbox=props)
@@ -547,7 +645,88 @@ $i$    = {i}\u00B0'.format(**text_params)
                 self.ax_box_1.set_ylim(plot_params['sub_1_lim_f'] - plot_params['sub_1_lim_s']/2, plot_params['sub_1_brake_f'] + plot_params['sub_1_lim_s']/2)
 
     def _plot_rhos_and_thetas(self, orbit_params, plot_params):
-        pass
+        drho, dtheta = calculate_drho_and_dtheta(orbit_params)
+        epochs = fromiter((point.epoch for point in orbit_params['position_list']), float)
+        epoch_ticks = get_tick_positions_for_epochs(epochs)
+
+        self.ax_rho_1.set_ylabel('$\u0394\u03C1$, {}'.format(plot_params['arcsec']), labelpad=plot_params['padding'])
+        self.ax_rho_1.plot(epochs[0], drho[0], color=plot_params['color1'], ls='', marker='o', mec='k', mfc='w', ms=10)
+        self.ax_rho_1.plot(epochs[orbit_params['newPoints']], drho[orbit_params['newPoints']], color=plot_params['color1'], ls='', marker='o', mec='k', mfc='w', ms=5)
+        self.ax_rho_1.plot(epochs[orbit_params['badPoints']], drho[orbit_params['badPoints']], color=plot_params['color1'], ls='', marker='x', mec='k', mfc='k', ms=5)
+        self.ax_rho_1.plot(epochs[orbit_params['libPoints']], drho[orbit_params['libPoints']], color=plot_params['color1'], ls='', marker='^', mec='k', mfc='k', ms=5)
+        self.ax_rho_1.axhline(0, color=plot_params['color1'], linestyle='--', linewidth=1)
+        self.ax_rho_1.xaxis.set_ticks(epoch_ticks)
+        self.ax_rho_1.set_xticklabels(['']*len(epoch_ticks))
+
+        self.ax_theta_1.set_xlabel(plot_params['epoch'])
+        self.ax_theta_1.set_ylabel('$\u0394\u03B8$, \u00B0', labelpad=plot_params['padding'])
+        self.ax_theta_1.plot(epochs[0], dtheta[0], color=plot_params['color1'], ls='', marker='o', mec='k', mfc='w', ms=10)
+        self.ax_theta_1.plot(epochs[orbit_params['newPoints']], dtheta[orbit_params['newPoints']], color=plot_params['color1'], ls='', marker='o', mec='k', mfc='w', ms=5)
+        self.ax_theta_1.plot(epochs[orbit_params['badPoints']], dtheta[orbit_params['badPoints']], color=plot_params['color1'], ls='', marker='x', mec='k', mfc='k', ms=5)
+        self.ax_theta_1.plot(epochs[orbit_params['libPoints']], dtheta[orbit_params['libPoints']], color=plot_params['color1'], ls='', marker='^', mec='k', mfc='k', ms=5)
+        self.ax_theta_1.axhline(0, color=plot_params['color1'], linestyle='--', linewidth=1)
+        self.ax_theta_1.xaxis.set_ticks(epoch_ticks)
+
+        self.ax_box_rho_1.boxplot(drho, boxprops={'color': plot_params['color1']}, medianprops={'color': plot_params['color1']}, whiskerprops={'linestyle': '-', 'color': plot_params['color1']})
+        self.ax_box_theta_1.boxplot(dtheta, boxprops={'color': plot_params['color1']}, medianprops={'color': plot_params['color1']}, whiskerprops={'linestyle': '-', 'color': plot_params['color1']})
+
+        if plot_params['sub_1_lim_s'] > 0:
+            self.ax_rho_1.yaxis.set_ticks(arange(plot_params['sub_1_lim_f'], plot_params['sub_1_lim_t']+1, plot_params['sub_1_lim_s']))
+            self.ax_rho_1.set_ylim(plot_params['sub_1_lim_f'] - plot_params['sub_1_lim_s'], plot_params['sub_1_lim_t'] + plot_params['sub_1_lim_s'])
+            self.ax_box_rho_1.yaxis.set_ticks(arange(plot_params['sub_1_lim_f'], plot_params['sub_1_lim_t']+1, plot_params['sub_1_lim_s']))
+            self.ax_box_rho_1.set_ylim(plot_params['sub_1_lim_f'] - plot_params['sub_1_lim_s'], plot_params['sub_1_lim_t'] + plot_params['sub_1_lim_s'])
+        
+        if plot_params['sub_2_lim_s'] > 0:
+            self.ax_theta_1.yaxis.set_ticks(arange(plot_params['sub_2_lim_f'], plot_params['sub_2_lim_t']+1, plot_params['sub_2_lim_s']))
+            self.ax_theta_1.set_ylim(plot_params['sub_2_lim_f'] - plot_params['sub_2_lim_s'], plot_params['sub_2_lim_t'] + plot_params['sub_2_lim_s'])
+            self.ax_box_theta_1.yaxis.set_ticks(arange(plot_params['sub_2_lim_f'], plot_params['sub_2_lim_t']+1, plot_params['sub_2_lim_s']))
+            self.ax_box_theta_1.set_ylim(plot_params['sub_2_lim_f'] - plot_params['sub_2_lim_s'], plot_params['sub_2_lim_t'] + plot_params['sub_2_lim_s'])
+        
+        if plot_params['Brake_1']:
+            self.ax_rho_2.plot(epochs[0], drho[0], color=plot_params['color1'], ls='', marker='o', mec='k', mfc='w', ms=10)
+            self.ax_rho_2.plot(epochs[orbit_params['newPoints']], drho[orbit_params['newPoints']], color=plot_params['color1'], ls='', marker='o', mec='k', mfc='w', ms=5)
+            self.ax_rho_2.plot(epochs[orbit_params['badPoints']], drho[orbit_params['badPoints']], color=plot_params['color1'], ls='', marker='x', mec='k', mfc='k', ms=5)
+            self.ax_rho_2.plot(epochs[orbit_params['libPoints']], drho[orbit_params['libPoints']], color=plot_params['color1'], ls='', marker='^', mec='k', mfc='k', ms=5)
+            self.ax_rho_2.axhline(0, color=plot_params['color1'], linestyle='--', linewidth=1)
+            self.ax_rho_2.xaxis.set_ticks(epoch_ticks)
+            self.ax_rho_2.set_xticklabels(['']*len(epoch_ticks))
+
+            self.ax_rho_1.set_ylabel('$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \u0394\u03C1$, {}'.format(plot_params['arcsec']), labelpad=plot_params['padding'])
+            self.ax_box_rho_2.boxplot(drho, boxprops={'color': plot_params['color1']}, medianprops={'color': plot_params['color1']}, whiskerprops={'linestyle': '-', 'color': plot_params['color1']})
+            self.ax_box_rho_2.get_xaxis().set_visible(False)
+
+            if plot_params['sub_1_brake_s'] > 0 and plot_params['sub_1_lim_s'] > 0:
+                self.ax_rho_2.yaxis.set_ticks(arange(plot_params['sub_1_brake_t'], plot_params['sub_1_lim_t']+1, plot_params['sub_1_brake_s']))
+                self.ax_rho_2.set_ylim(plot_params['sub_1_brake_t'] - plot_params['sub_1_brake_s']/2, plot_params['sub_1_lim_t'] + plot_params['sub_1_brake_s']/2)
+                self.ax_rho_1.yaxis.set_ticks(arange(plot_params['sub_1_lim_f'], plot_params['sub_1_brake_f']+1, plot_params['sub_1_lim_s']))
+                self.ax_rho_1.set_ylim(plot_params['sub_1_lim_f'] - plot_params['sub_1_lim_s']/2, plot_params['sub_1_brake_f'] + plot_params['sub_1_lim_s']/2)
+                self.ax_box_rho_2.yaxis.set_ticks(arange(plot_params['sub_1_brake_t'], plot_params['sub_1_lim_t']+1, plot_params['sub_1_brake_s']))
+                self.ax_box_rho_2.set_ylim(plot_params['sub_1_brake_t'] - plot_params['sub_1_brake_s']/2, plot_params['sub_1_lim_t'] + plot_params['sub_1_brake_s']/2)
+                self.ax_box_rho_1.yaxis.set_ticks(arange(plot_params['sub_1_lim_f'], plot_params['sub_1_brake_f']+1, plot_params['sub_1_lim_s']))
+                self.ax_box_rho_1.set_ylim(plot_params['sub_1_lim_f'] - plot_params['sub_1_lim_s']/2, plot_params['sub_1_brake_f'] + plot_params['sub_1_lim_s']/2)
+
+        if plot_params['Brake_2']:
+            self.ax_theta_2.plot(epochs[0], dtheta[0], color=plot_params['color1'], ls='', marker='o', mec='k', mfc='w', ms=10)
+            self.ax_theta_2.plot(epochs[orbit_params['newPoints']], dtheta[orbit_params['newPoints']], color=plot_params['color1'], ls='', marker='o', mec='k', mfc='w', ms=5)
+            self.ax_theta_2.plot(epochs[orbit_params['badPoints']], dtheta[orbit_params['badPoints']], color=plot_params['color1'], ls='', marker='x', mec='k', mfc='k', ms=5)
+            self.ax_theta_2.plot(epochs[orbit_params['libPoints']], dtheta[orbit_params['libPoints']], color=plot_params['color1'], ls='', marker='^', mec='k', mfc='k', ms=5)
+            self.ax_theta_2.axhline(0, color=plot_params['color1'], linestyle='--', linewidth=1)
+            self.ax_theta_2.xaxis.set_ticks(epoch_ticks)
+            self.ax_theta_2.set_xticklabels(['']*len(epoch_ticks))
+
+            self.ax_theta_1.set_ylabel('$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \u0394\u03B8$, \u00B0'.format(plot_params['arcsec']), labelpad=plot_params['padding'])
+            self.ax_box_theta_2.boxplot(dtheta, boxprops={'color': plot_params['color1']}, medianprops={'color': plot_params['color1']}, whiskerprops={'linestyle': '-', 'color': plot_params['color1']})
+            self.ax_box_theta_2.get_xaxis().set_visible(False)
+            
+            if plot_params['sub_2_brake_s'] > 0 and plot_params['sub_2_lim_s'] > 0:
+                self.ax_theta_2.yaxis.set_ticks(arange(plot_params['sub_2_brake_t'], plot_params['sub_2_lim_t']+1, plot_params['sub_2_brake_s']))
+                self.ax_theta_2.set_ylim(plot_params['sub_2_brake_t'] - plot_params['sub_2_brake_s']/2, plot_params['sub_2_lim_t'] + plot_params['sub_2_brake_s']/2)
+                self.ax_theta_1.yaxis.set_ticks(arange(plot_params['sub_2_lim_f'], plot_params['sub_2_brake_f']+1, plot_params['sub_2_lim_s']))
+                self.ax_theta_1.set_ylim(plot_params['sub_2_lim_f'] - plot_params['sub_2_lim_s']/2, plot_params['sub_2_brake_f'] + plot_params['sub_2_lim_s']/2)
+                self.ax_box_theta_2.yaxis.set_ticks(arange(plot_params['sub_2_brake_t'], plot_params['sub_2_lim_t']+1, plot_params['sub_2_brake_s']))
+                self.ax_box_theta_2.set_ylim(plot_params['sub_2_brake_t'] - plot_params['sub_2_brake_s']/2, plot_params['sub_2_lim_t'] + plot_params['sub_2_brake_s']/2)
+                self.ax_box_theta_1.yaxis.set_ticks(arange(plot_params['sub_2_lim_f'], plot_params['sub_2_brake_f']+1, plot_params['sub_2_lim_s']))
+                self.ax_box_theta_1.set_ylim(plot_params['sub_2_lim_f'] - plot_params['sub_2_lim_s']/2, plot_params['sub_2_brake_f'] + plot_params['sub_2_lim_s']/2)
 
     def on_press(self, event):
         if self.ax_orbit.axes != event.inaxes: return
