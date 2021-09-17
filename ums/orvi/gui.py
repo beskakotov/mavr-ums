@@ -1,5 +1,5 @@
-from PySide2.QtWidgets import QMessageBox, QWidget, QGridLayout, QLineEdit, QLabel, QWidget, QGridLayout, QPushButton, QFileDialog, QSpinBox, QRadioButton
-from PySide2.QtGui import QPixmap, QImage, QIcon
+from PySide2.QtWidgets import QWidget, QGridLayout, QLineEdit, QLabel, QPushButton, QFileDialog
+# from PySide2.QtGui import QPixmap, QImage, QIcon
 from PySide2.QtCore import Qt
 from os import path
 import pickle
