@@ -25,7 +25,10 @@ class Program(Base):
         return f"[{self.ID}] {self.name} ({self.author}) '{self.marker}'"
         
     def __repr__(self):
-        return f"<Program(ID={self.ID}, name={self.name}, author={self.author}"
+        return f"<Program(ID={self.ID}, name={self.name}, author={self.author}>"
+    
+    def __str__(self):
+        return f"{self.ID} | {self.author} | {self.name}"
 
 class StarOrAsteroid(Base):  
     __tablename__ = 'objects'

@@ -45,6 +45,7 @@ class SimaMainWidget(QWidget):
         self.setEnabled(False)
         
     def loadTable(self):
-        df = pd.read_sql(self.session.query(StarOrAsteroid).statement, self.session.bind) 
+        df = pd.read_sql(self.session.query(StarOrAsteroid).statement, self.session.bind)
+        df = df.drop('describe', 1)
         model = DataFrameModel(df)
         self.table.setModel(model)

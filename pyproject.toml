@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ums"
-version = "0.1"
+version = "0.0.1"
 description = "Will be..."
 authors = ["Anatoly Beskakotov <beskakotov.as@gmail.com>"]
 
@@ -23,5 +23,5 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-orvi = "ums.orvi:run"
-sima = "ums.sima:run"
+mavr-orvi = "ums.orvi:run"
+mavr-sima = "ums.sima:run"
