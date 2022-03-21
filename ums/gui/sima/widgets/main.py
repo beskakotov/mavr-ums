@@ -3,9 +3,9 @@ from ast import literal_eval
 import keyring
 
 from ums import __mainversion__, __subversion__
-from ums.sima.common.connection import Connection
+from ums.sima import Connection
 
-from ums.sima.widgets.menus import search
+from ums.gui.sima.widgets.menus import search
 
 class MenuWidget(QWidget):
     def __init__(self, parent=None):

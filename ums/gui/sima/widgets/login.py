@@ -3,7 +3,7 @@ from ast import literal_eval
 import keyring
 
 from ums import __mainversion__, __subversion__
-from ums.sima.common.connection import Connection
+from ums.sima import Connection
 
 class LoginWidget(QWidget):
     def __init__(self, parent=None):

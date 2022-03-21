@@ -4,7 +4,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from numpy import fromiter, arange, rad2deg
 
-from ums.orvi.services import create_axis, calculate_residuals, get_tick_positions_for_epochs, calculate_drho_and_dtheta
+from ums.gui.orvi.services import create_axis, calculate_residuals, get_tick_positions_for_epochs, calculate_drho_and_dtheta
 
 
 class OrbitImage(QWidget):

@@ -2,9 +2,9 @@ from PySide2.QtWidgets import QApplication, QMainWindow, QSizePolicy
 from PySide2.QtCore import Signal, Slot, Qt
 import sys
 from time import sleep
-from ums.sima.common.connection import Connection
-from ums.sima.widgets.login import LoginWidget
-from ums.sima.widgets.main import MenuWidget
+from ums.sima import Connection
+from ums.gui.sima.widgets.login import LoginWidget
+from ums.gui.sima.widgets.main import MenuWidget
 
 from ums import __mainversion__, __subversion__, __debugversion__
 

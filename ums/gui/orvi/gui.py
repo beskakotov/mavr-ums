@@ -5,10 +5,10 @@ from os import path
 import pickle
 
 from ums import __mainversion__, __subversion__
-from ums.orvi.orbitparams import OrbitParams
-from ums.orvi.plotparams import PlotParams
-from ums.orvi.image import OrbitImage
-from ums.common.widgets import ErrorMessage
+from ums.gui.orvi.orbitparams import OrbitParams
+from ums.gui.orvi.plotparams import PlotParams
+from ums.gui.orvi.image import OrbitImage
+from ums.gui.common.widgets import ErrorMessage
 
 class OrVI_GUI(QWidget):
     def __init__(self, parent=None):

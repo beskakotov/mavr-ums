@@ -21,5 +21,4 @@ pywin32-ctypes==0.2.0
 shiboken2==5.15.2.1
 six==1.16.0
 SQLAlchemy==1.4.32
--e git+https://github.com/beskakotov/mavr-ums.git@133d35fb68a01a9131686b16cbd55cfe2097fa85#egg=ums
 zipp==3.7.0

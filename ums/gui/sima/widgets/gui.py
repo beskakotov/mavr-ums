@@ -6,9 +6,9 @@ from PySide2.QtWidgets import QWidget, QGridLayout, QLineEdit, QLabel, QSpinBox,
 import pandas as pd
 
 from ums import __mainversion__, __subversion__
-from ums.common.widgets import ErrorMessage
-from ums.sima.common.classes import StarOrAsteroid
-from ums.sima.common.for_table import DataFrameModel
+from ums.gui.common.widgets import ErrorMessage
+from ums.sima.classes import StarOrAsteroid
+from ums.gui.sima.common.for_table import DataFrameModel
 
 class SimaMainWidget(QWidget):
     def __init__(self, parent, conn):

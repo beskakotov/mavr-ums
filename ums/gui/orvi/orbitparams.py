@@ -5,7 +5,7 @@ from PySide2.QtCore import Qt, QPoint
 
 from numpy import fromiter
 
-from ums.orvi.services import get_orbit, get_points, OrbitalSolution
+from ums.gui.orvi.services import get_orbit, get_points, OrbitalSolution
 from ums.common.functions import is_numeric
 
 

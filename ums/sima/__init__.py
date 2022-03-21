@@ -1,1 +1,2 @@
-from .classes import Base
+from .classes import *
+from connection import Connection

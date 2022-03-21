@@ -1,5 +1,5 @@
 from PySide2.QtWidgets import QApplication
-from ums.orvi.gui import OrVI_GUI
+from ums.gui.orvi.gui import OrVI_GUI
 import sys
 
 def run():

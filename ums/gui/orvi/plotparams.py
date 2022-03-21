@@ -2,7 +2,7 @@ from PySide2.QtWidgets import QComboBox, QWidget, QGridLayout, QLineEdit, QLabel
 from PySide2.QtGui import QPixmap, QImage, QIcon
 from PySide2.QtCore import Qt, QPoint
 
-from ums.common.widgets import QBorderedLabel, ErrorMessage, MySlider
+from ums.gui.common.widgets import QBorderedLabel, ErrorMessage, MySlider
 
 
 class PlotParams(QWidget):
