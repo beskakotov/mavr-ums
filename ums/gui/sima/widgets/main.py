@@ -2,7 +2,6 @@ from PySide2.QtWidgets import QWidget, QVBoxLayout #, QPushButton, QLabel, QLine
 from ast import literal_eval
 import keyring
 
-from ums import __mainversion__, __subversion__
 from ums.sima import Connection
 
 from ums.gui.sima.widgets.menus import search

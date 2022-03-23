@@ -3,30 +3,26 @@ from PySide2.QtCore import Signal, Slot, Qt
 import sys
 from time import sleep
 from ums.sima import Connection
-from ums.gui.sima.widgets.login import LoginWidget
-from ums.gui.sima.widgets.main import MenuWidget
+from ums.gui.sima.widgets import LoginWidget
+from ums.gui.sima.widgets import MenuWidget
 
-from ums import __mainversion__, __subversion__, __debugversion__
-
-PROGRAM_NAME = f'UMS v{__mainversion__}.{__subversion__}.{__debugversion__}'
+from ums import __version__
 
 class SimaGUI(QMainWindow):
-    connectionEstablished = Signal(Connection)
+    connectionEstablished = Signal()
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle(f'SIMA || Login form || {PROGRAM_NAME}')
+        self.setWindowTitle(f'SIMA || Login form || {__version__.get()}')
         self.connectionEstablished.connect(self.setConnection)
         self.setCentralWidget(LoginWidget(parent=self))
         self.setMaximumSize(325, 175)
     
     @Slot()
-    def setConnection(self, conn):
-        self.conn = conn
-        self.setWindowTitle(f'SIMA || Main menu || {PROGRAM_NAME}')
+    def setConnection(self):
+        self.setWindowTitle(f'SIMA || Main menu || {__version__.get()}')
         self.setCentralWidget(MenuWidget(parent=self))
         self.setMinimumSize(350, 250)
-        # self.setWindowState(Qt.WindowMaximized)
 
 def run():
     app = QApplication(sys.argv)

@@ -5,7 +5,6 @@ from PySide2.QtWidgets import QWidget, QGridLayout, QLineEdit, QLabel, QSpinBox,
 # import pickle
 import pandas as pd
 
-from ums import __mainversion__, __subversion__
 from ums.gui.common.widgets import ErrorMessage
 from ums.sima.classes import StarOrAsteroid
 from ums.gui.sima.common.for_table import DataFrameModel

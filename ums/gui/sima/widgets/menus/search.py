@@ -1,7 +1,8 @@
 from PySide2.QtWidgets import QWidget, QSizePolicy, QHBoxLayout, QGridLayout, QLabel, QPushButton, QLineEdit, QComboBox, QSpinBox
 from PySide2.QtCore import Qt
 
-from ums.sima.common.classes import Program
+from ums.sima.classes import Program
+from ums.sima import Connection
 
 class ByName(QWidget):
     def __init__(self, parent):
@@ -114,4 +115,4 @@ class ByProgram(QWidget):
         self.setLayout(self.main_layout)
 
     def search_programs(self):
-        return self.parent().conn.session.query(Program).all()
+        return Connection.getSession().query(Program).all()
