@@ -1,2 +1,2 @@
 from .classes import *
-from connection import Connection
+from .connection import Connection

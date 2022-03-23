@@ -8,7 +8,7 @@ class Program(Base):
     __tablename__ = 'programs'
     ID = Column(INTEGER, primary_key=True, index=True, unique=True)
 
-    name = Column(VARCHAR(64), nullable=False, index=True)
+    name = Column(VARCHAR(128), nullable=False, index=True)
     author = Column(VARCHAR(64), nullable=False, index=True)
     describe = Column(TEXT, nullable=True)
     
@@ -18,19 +18,19 @@ class Program(Base):
     size3 = Column(NUMERIC(3, 1), default=5)
     def_obs_period = Column(NUMERIC(3, 1), default=12)
 
-    def return_list(self):
+    def as_list(self):
         return (self.ID, self.name, self.author, self.marker, self.size1, self.size2, self.size3, self.def_obs_period)
 
-    def make_str(self):
-        return f"[{self.ID}] {self.name} ({self.author}) '{self.marker}'"
+    def __str__(self):
+        return f"[{self.ID:02d}] {self.name} ({self.author}) '{self.marker}'"
         
     def __repr__(self):
         return f"<Program(ID={self.ID}, name={self.name}, author={self.author}>"
     
-    def __str__(self):
-        return f"{self.ID} | {self.author} | {self.name}"
+    # def __str__(self):
+    #     return f"{self.ID} | {self.author} | {self.name}"
 
-class StarOrAsteroid(Base):  
+class ObservationObject(Base):  
     __tablename__ = 'objects'
     ID = Column(INTEGER, primary_key=True, index=True, unique=True)
 
@@ -42,45 +42,47 @@ class StarOrAsteroid(Base):
 
     ra_2000 = Column(VARCHAR(16))
     dec_2000 = Column(VARCHAR(16))
-    ra_pm = Column(NUMERIC(8, 3))
-    dec_pm = Column(NUMERIC(8, 3))
+    ra_2000_f = Column(NUMERIC(9, 6), nullable=True, index=True)
+    dec_2000_f = Column(NUMERIC(10, 6), nullable=True, index=True)
+    ra_pm = Column(NUMERIC(8, 3), nullable=True, default=None)
+    dec_pm = Column(NUMERIC(8, 3), nullable=True, default=None)
 
-    gmag = Column(NUMERIC(4, 2), nullable=True)
-    bmag = Column(NUMERIC(4, 2), nullable=True)
-    vmag = Column(NUMERIC(4, 2), nullable=True)
-    rmag = Column(NUMERIC(4, 2), nullable=True)
-    imag = Column(NUMERIC(4, 2), nullable=True)
-    jmag = Column(NUMERIC(4, 2), nullable=True)
-    hmag = Column(NUMERIC(4, 2), nullable=True)
-    kmag = Column(NUMERIC(4, 2), nullable=True)
+    gmag = Column(NUMERIC(4, 2), nullable=True, default=None)
+    bmag = Column(NUMERIC(4, 2), nullable=True, default=None)
+    vmag = Column(NUMERIC(4, 2), nullable=True, default=None)
+    rmag = Column(NUMERIC(4, 2), nullable=True, default=None)
+    imag = Column(NUMERIC(4, 2), nullable=True, default=None)
+    jmag = Column(NUMERIC(4, 2), nullable=True, default=None)
+    hmag = Column(NUMERIC(4, 2), nullable=True, default=None)
+    kmag = Column(NUMERIC(4, 2), nullable=True, default=None)
 
-    sptype = Column(VARCHAR(32), nullable=True)
+    sptype = Column(VARCHAR(32), nullable=True, default=None)
     parallax = Column(NUMERIC(7, 4), nullable=True, default=None)
     period = Column(NUMERIC(7, 4), nullable=True, default=None)
 
     status = Column(BOOLEAN, index=True)
 
-    describe = Column(TEXT)
+    describe = Column(TEXT, nullable=True)
 
-    posN = Column(SMALLINT)
-    orbN = Column(SMALLINT)
+    posN = Column(SMALLINT, default=0)
+    orbN = Column(SMALLINT, default=0)
     
-    def return_list(self):
+    def as_list(self):
         return (self.ID, self._Program, self.t, self.main_name, self.ra_2000, self.dec_2000, self.ra_pm, self.dec_pm,
         self.gmag, self.bmag, self.vmag, self.rmag, self.imag, self.jmag, self.hmag,
         self.sptype, self.parallax, self.period, self.status, self.posN, self.orbN)
     
-    def return_radeg(self):
-        ra_txt = self.ra_2000
-        ra_h, ra_m, ra_s = ra_txt.split()
-        radeg = 15*(float(ra_h) + float(ra_m)/60 + float(ra_s)/3600)
-        return radeg
+    # def return_radeg(self):
+    #     ra_txt = self.ra_2000
+    #     ra_h, ra_m, ra_s = ra_txt.split()
+    #     radeg = 15*(float(ra_h) + float(ra_m)/60 + float(ra_s)/3600)
+    #     return radeg
 
-    def return_decdeg(self):
-        dec_txt = self.dec_2000
-        dec_d, dec_m, dec_s = dec_txt.split()
-        decdeg = (-1 if float(dec_d) < 0 else 1) * (abs(float(dec_d)) + float(dec_m) / 60 + float(dec_s) / 3600)
-        return decdeg
+    # def return_decdeg(self):
+    #     dec_txt = self.dec_2000
+    #     dec_d, dec_m, dec_s = dec_txt.split()
+    #     decdeg = (-1 if float(dec_d) < 0 else 1) * (abs(float(dec_d)) + float(dec_m) / 60 + float(dec_s) / 3600)
+    #     return decdeg
     
     def update_counters(self, session):
         self.posN = session.query(PositionParameter).filter(PositionParameter._Object == self.ID).count()

@@ -1,55 +1,17 @@
 from logging.config import fileConfig
 from matplotlib.style import use
-
+from getpass import getpass
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
-import psycopg2
-from getpass import getpass
-
 from alembic import context
-
-import keyring
-
-def get_keyring_values(force_new=False):
-    def validate_parameters():
-        username = keyring.get_password('ums.sima', 'username')
-        password = keyring.get_password('ums.sima', 'password')
-        host = keyring.get_password('ums.sima', 'host')
-        port = keyring.get_password('ums.sima', 'port')
-        dbname = keyring.get_password('ums.sima', 'dbname')
-        try:
-            connection = psycopg2.connect(
-                dbname=dbname,
-                user=username,
-                password=password,
-                host=host,
-                port=port
-            )
-        except:
-            return get_keyring_values(force_new=True)
-        else:
-            return dict(DB_USER=username, DB_PASS=password, DB_HOST=host, DB_PORT=port, DB_NAME=dbname)
-
-
-    username = keyring.get_password('ums.sima', 'username')
-    if force_new or username is None:
-        if force_new and username is not None:
-            print('Error in login data. Please, input new.')
-        keyring.set_password('ums.sima', 'username', input('Enter database username: '))
-        keyring.set_password('ums.sima', 'password', getpass('Enter database password: '))
-        keyring.set_password('ums.sima', 'host', input('Enter database host: '))
-        keyring.set_password('ums.sima', 'port', input('Enter database port: '))
-        keyring.set_password('ums.sima', 'dbname', input('Enter database name: '))
-        return validate_parameters()
-    else:
-        return validate_parameters()
+from ums.sima import Connection as Conn
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 section = config.config_ini_section
 
-db_data = get_keyring_values()
+db_data = Conn.getDatabaseLoginData()
 
 config.set_section_option(section, "DB_USER", db_data['DB_USER'])
 config.set_section_option(section, "DB_PASS", db_data['DB_PASS'])
