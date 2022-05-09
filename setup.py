@@ -30,7 +30,7 @@ setup_kwargs = {
     'name': 'ums',
     'version': '0.0.1',
     'description': 'Will be...',
-    'long_description': None,
+    'long_description': open('README.md', 'r').read(),
     'author': 'Anatoly Beskakotov',
     'author_email': 'beskakotov.as@gmail.com',
     'maintainer': None,
